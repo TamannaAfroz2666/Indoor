@@ -28,3 +28,118 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* //login custome css add start  */
+
+/* ============================================
+   LOGIN PHONE INPUT
+   react-phone-number-input style overrides
+============================================ */
+/* ==========================================
+   LOGIN PHONE INPUT — SCREENSHOT MATCH
+========================================== */
+
+.login-phone-input {
+  width: 100%;
+}
+
+.login-phone-control.PhoneInput {
+  display: flex !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  height: 48px !important;
+  overflow: hidden !important;
+
+  border: 1px solid #d9dfe5 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+}
+
+/* Focus design */
+.login-phone-control.PhoneInput:focus-within {
+  border-color: #bfc8d0 !important;
+  box-shadow: none !important;
+}
+
+/* Left country section */
+.login-phone-control .PhoneInputCountry {
+  position: relative !important;
+  display: flex !important;
+  flex: 0 0 84px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  align-self: stretch !important;
+
+  gap: 7px !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+
+  border-right: 1px solid #d9dfe5 !important;
+  background: #ffffff !important;
+}
+
+/* Invisible native selector, click still works */
+.login-phone-control .PhoneInputCountrySelect {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 5 !important;
+  width: 100% !important;
+  height: 100% !important;
+  cursor: pointer !important;
+  opacity: 0 !important;
+}
+
+/* Flag */
+.login-phone-control .PhoneInputCountryIcon {
+  width: 22px !important;
+  height: 15px !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Remove flag border */
+.login-phone-control .PhoneInputCountryIcon--border {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.login-phone-control .PhoneInputCountryIconImg {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.login-phone-control .PhoneInputCountrySelectArrow {
+  display: none !important;
+}
+
+/* Phone field */
+.login-phone-control .PhoneInputInput {
+  display: block !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+
+  margin: 0 !important;
+  padding: 0 14px !important;
+
+  border: 0 !important;
+  background: transparent !important;
+  color: #20262d !important;
+
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.login-phone-control .PhoneInputInput::placeholder {
+  color: #a7afb7 !important;
+  opacity: 1 !important;
+}
+/* // login custom css end  */

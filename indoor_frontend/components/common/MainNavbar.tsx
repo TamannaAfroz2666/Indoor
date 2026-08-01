@@ -3,141 +3,194 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-    BookOpen,
-    CircleUserRound,
-    Dumbbell,
-    Home,
-    MapPin,
-    PersonStanding,
-    LocateFixed,
-    Search
+  BookOpen,
+  CircleUserRound,
+  Dumbbell,
+  Home,
+  MapPin,
+  PersonStanding,
+  LocateFixed,
+  Search
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "./Logo";
+import { LoginModal } from "@/features/modal/LoginModal";
+import type { ElementType } from "react";
 
+type MobileNavItem =
+  | {
+    label: string;
+    href: string;
+    icon: React.ElementType;
+    action?: never;
+  }
+  | {
+    label: string;
+    action: "login";
+    icon: React.ElementType;
+    href?: never;
+  };
 
-const mobileNavItems = [
-    {
-        label: "Home",
-        href: "/",
-        icon: Home,
-    },
-    {
-        label: "Play",
-        href: "/games",
-        icon: PersonStanding,
-    },
-    {
-        label: "Book",
-        href: "/venues",
-        icon: BookOpen,
-    },
-    {
-        label: "Train",
-        href: "/trainers",
-        icon: Dumbbell,
-    },
-    {
-        label: "Login",
-        href: "/login",
-        icon: CircleUserRound,
-    },
+const mobileNavItems: MobileNavItem[] = [
+  {
+    label: "Home",
+    href: "/",
+    icon: Home,
+  },
+  {
+    label: "Play",
+    href: "/games",
+    icon: PersonStanding,
+  },
+  {
+    label: "Book",
+    href: "/venues",
+    icon: BookOpen,
+  },
+  {
+    label: "Train",
+    href: "/trainers",
+    icon: Dumbbell,
+  },
+  {
+    label: "Login",
+    action: "login",
+    icon: CircleUserRound,
+  },
 ];
 
 
 const homeDesktopItems = [
-    {
-        label: "Play",
-        href: "/games",
-        icon: PersonStanding,
-    },
-    {
-        label: "Book",
-        href: "/venues",
-        icon: BookOpen,
-    },
-    {
-        label: "Train",
-        href: "/trainers",
-        icon: Dumbbell,
-    },
+  {
+    label: "Play",
+    href: "/games",
+    icon: PersonStanding,
+  },
+  {
+    label: "Book",
+    href: "/venues",
+    icon: BookOpen,
+  },
+  {
+    label: "Train",
+    href: "/trainers",
+    icon: Dumbbell,
+  },
 ];
 
 export function MainNavbar() {
-    const pathname = usePathname();
+  const pathname = usePathname();
 
 
-    const isBookSection =
-        pathname.startsWith("/venues") ||
-        pathname.startsWith("/bookings");
+  const isBookSection =
+    pathname.startsWith("/venues") ||
+    pathname.startsWith("/bookings");
 
 
-    const isActiveRoute = (href: string) => {
-        if (href === "/") {
-            return pathname === "/";
-        }
+  const isActiveRoute = (href: string) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
 
-        return pathname.startsWith(href);
-    };
+    return pathname.startsWith(href);
+  };
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // ADD
 
-    return (
-        <>
-            <header className="fixed left-0 right-0 top-0 z-50 border-b border-gray-300 bg-white md:hidden">
-                <div className="mx-auto flex h-[70px] w-full max-w-[430px] items-center justify-between px-6">
-                    <Logo />
+  return (
+    <>
+        <LoginModal
+      isOpen={isLoginModalOpen}
+      onClose={() => setIsLoginModalOpen(false)}
+    />
+      <header className="fixed left-0 right-0 top-0 z-50 border-b border-gray-300 bg-white md:hidden">
+        <div className="mx-auto flex h-[70px] w-full max-w-[430px] items-center justify-between px-6">
+          <Logo />
 
-                   <LocationPicker />
-                </div>
-            </header>
+          <LocationPicker />
+        </div>
+      </header>
 
-            {/*     
+      {/*     
         mobile-hidden
         md desktop navbar select 
       */}
-            <div className="hidden md:block">
-                {isBookSection ? (
-                    <BookDesktopNavbar pathname={pathname} />
-                ) : (
-                    <HomeDesktopNavbar
-                        pathname={pathname}
-                        isActiveRoute={isActiveRoute}
-                    />
-                )}
-            </div>
+      <div className="hidden md:block">
+        {isBookSection ? (
+          <BookDesktopNavbar pathname={pathname} />
+        ) : (
+          <HomeDesktopNavbar
+            pathname={pathname}
+            isActiveRoute={isActiveRoute}
+          />
+        )}
+      </div>
 
-            {/*
+      {/*
         MOBILE BOTTOM NAVIGATION
         CHANGE:
         all main page are same।
         md:hidden thats why tablet/desktop- will be not present
       */}
-            <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-300 bg-white md:hidden">
-                <div className="mx-auto grid h-[68px] w-full max-w-[430px] grid-cols-5">
-                    {mobileNavItems.map((item) => {
-                        const Icon = item.icon;
-                        const active = isActiveRoute(item.href);
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-300 bg-white md:hidden">
+        <div className="mx-auto grid h-[68px] w-full max-w-[430px] grid-cols-5">
+          {mobileNavItems.map((item) => {
+            const Icon = item.icon;
 
-                        return (
-                            <Link
-                                key={item.label}
-                                href={item.href}
-                                className={`relative flex flex-col items-center justify-center gap-1 text-[12px] font-medium ${active ? "text-[#12b866]" : "text-[#303b36]"}`}
-                            >
-                                <Icon
-                                    size={21}
-                                    strokeWidth={active ? 2.2 : 1.7}
-                                />
-                                <span>{item.label}</span>
-                                {active && (
-                                    <span className="absolute bottom-0 h-[2px] w-[48px] rounded-full bg-[#12b866]" />
-                                )}
-                            </Link>
-                        );
-                    })}
-                </div>
-            </nav>
-        </>
-    );
+            // ADD: Login item route নয়, তাই আলাদা active state
+            const active =
+              item.action === "login"
+                ? isLoginModalOpen
+                : isActiveRoute(item.href);
+
+            // ADD: Login-এর জন্য button render হবে
+            if (item.action === "login") {
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => setIsLoginModalOpen(true)}
+                  className={`relative flex flex-col items-center justify-center gap-1 text-[12px] font-medium ${active ? "text-[#12b866]" : "text-[#303b36]"
+                    }`}
+                >
+                  <Icon
+                    size={21}
+                    strokeWidth={active ? 2.2 : 1.7}
+                  />
+
+                  <span>{item.label}</span>
+
+                  {active && (
+                    <span className="absolute bottom-0 h-[2px] w-[48px] rounded-full bg-[#12b866]" />
+                  )}
+                </button>
+              );
+            }
+
+            // Existing route items Link থাকবে
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`relative flex flex-col items-center justify-center gap-1 text-[12px] font-medium ${active ? "text-[#12b866]" : "text-[#303b36]"
+                  }`}
+              >
+                <Icon
+                  size={21}
+                  strokeWidth={active ? 2.2 : 1.7}
+                />
+
+                <span>{item.label}</span>
+
+                {active && (
+                  <span className="absolute bottom-0 h-[2px] w-[48px] rounded-full bg-[#12b866]" />
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </>
+  );
 }
 
 /*
@@ -146,56 +199,60 @@ export function MainNavbar() {
 navigation 
 */
 type HomeDesktopNavbarProps = {
-    pathname: string;
-    isActiveRoute: (href: string) => boolean;
+  pathname: string;
+  isActiveRoute: (href: string) => boolean;
 };
 
 function HomeDesktopNavbar({
-    pathname,
-    isActiveRoute,
+  pathname,
+  isActiveRoute,
 }: HomeDesktopNavbarProps) {
-    return (
-        <header className="sticky top-0 z-50 border-b border-gray-300 bg-white">
-            <div className="mx-auto flex h-[70px] w-full max-w-[1400px] items-center justify-between px-8 lg:px-10">
-                <Logo />
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // ADD
+  return (<>
+    {/* ADD: Login modal */}
+    <LoginModal
+      isOpen={isLoginModalOpen}
+      onClose={() => setIsLoginModalOpen(false)}
+    />
+    <header className="sticky top-0 z-50 border-b border-gray-300 bg-white">
+      <div className="mx-auto flex h-[70px] w-full max-w-[1400px] items-center justify-between px-8 lg:px-10">
+        <Logo />
 
-                <nav className="flex items-center gap-10 lg:gap-14">
-                    {homeDesktopItems.map((item) => {
-                        const Icon = item.icon;
-                        const active = isActiveRoute(item.href);
+        <nav className="flex items-center gap-10 lg:gap-14">
+          {homeDesktopItems.map((item) => {
+            const Icon = item.icon;
+            const active = isActiveRoute(item.href);
 
-                        return (
-                            <Link
-                                key={item.label}
-                                href={item.href}
-                                className={` flex items-center gap-2.5 text-[16px] font-medium transition-colors ${active
-                                    ? "text-[#16b866]"
-                                    : "text-[#303b36] hover:text-[#16b866]"
-                                    }`}
-                            >
-                                <Icon size={26} strokeWidth={1.8} />
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={` flex items-center gap-2.5 text-[16px] font-medium transition-colors ${active
+                  ? "text-[#16b866]"
+                  : "text-[#303b36] hover:text-[#16b866]"
+                  }`}
+              >
+                <Icon size={26} strokeWidth={1.8} />
 
-                                <span>{item.label}</span>
-                            </Link>
-                        );
-                    })}
-                </nav>
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
 
-                <Link
-                    href="/login"
-                    className={` flex items-center gap-2.5 text-[16px] font-medium transition-colors ${pathname.startsWith("/login")
-                        ? "text-[#16b866]"
-                        : "text-[#303b36] hover:text-[#16b866]"
-                        }
-          `}
-                >
-                    <CircleUserRound size={27} strokeWidth={1.8} />
+        <button
+          type="button"
+          onClick={() => setIsLoginModalOpen(true)}
+          className="flex items-center gap-2.5 text-[16px]  font-mediumtext-[#303b36] transition-colors hover:text-[#16b866] "
+        >
+          <CircleUserRound size={27} strokeWidth={1.8} />
+          <span>Login</span>
+        </button>
+      </div>
+    </header>
+  </>
 
-                    <span>Login</span>
-                </Link>
-            </div>
-        </header>
-    );
+  );
 }
 
 /*
@@ -211,50 +268,57 @@ function HomeDesktopNavbar({
   
 */
 type BookDesktopNavbarProps = {
-    pathname: string;
+  pathname: string;
 };
 
 function BookDesktopNavbar({
-    pathname,
+  pathname,
 }: BookDesktopNavbarProps) {
-    return (
-        <header className="sticky top-0 z-50 border-b border-gray-300 bg-white">
-            <div className="mx-auto flex h-[70px] w-full max-w-[1400px] items-center justify-between px-8 lg:px-10">
-                <Logo />
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // ADD
 
-                <div className="flex items-center gap-8">
-                    <Link
-                        href="/venues"
-                        className={pathname.startsWith("/venues")
-                            ? "font-semibold text-[#16b866]"
-                            : "font-medium text-[#303b36]"
-                        }
-                    >
-                        Venues
-                    </Link>
+  return (<>
+    <LoginModal
+      isOpen={isLoginModalOpen}
+      onClose={() => setIsLoginModalOpen(false)}
+    />
+    <header className="sticky top-0 z-50 border-b border-gray-300 bg-white">
+      <div className="mx-auto flex h-[70px] w-full max-w-[1400px] items-center justify-between px-8 lg:px-10">
+        <Logo />
 
-                    <Link
-                        href="/bookings"
-                        className={
-                            pathname.startsWith("/bookings")
-                                ? "font-semibold text-[#16b866]"
-                                : "font-medium text-[#303b36]"
-                        }
-                    >
-                        My Bookings
-                    </Link>
+        <div className="flex items-center gap-8">
+          <Link
+            href="/venues"
+            className={pathname.startsWith("/venues")
+              ? "font-semibold text-[#16b866]"
+              : "font-medium text-[#303b36]"
+            }
+          >
+            Venues
+          </Link>
 
-                    <Link
-                        href="/login"
-                        aria-label="Login"
-                        className="text-[#303b36]"
-                    >
-                        <CircleUserRound size={28} strokeWidth={1.8} />
-                    </Link>
-                </div>
-            </div>
-        </header>
-    );
+          <Link
+            href="/bookings"
+            className={
+              pathname.startsWith("/bookings")
+                ? "font-semibold text-[#16b866]"
+                : "font-medium text-[#303b36]"
+            }
+          >
+            My Bookings
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setIsLoginModalOpen(true)}
+            className="flex items-center gap-2.5 text-[16px]  font-mediumtext-[#303b36] transition-colors hover:text-[#16b866] "
+          >
+            <CircleUserRound size={27} strokeWidth={1.8} />
+            <span>Login</span>
+          </button>
+        </div>
+      </div>
+    </header>
+  </>);
 }
 // location function
 
