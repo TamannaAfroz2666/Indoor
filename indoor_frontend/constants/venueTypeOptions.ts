@@ -10,3 +10,4 @@ export const venueTypeOptions: VenueTypeOption[] = [
     value: "event-space",
   },
 ];
+

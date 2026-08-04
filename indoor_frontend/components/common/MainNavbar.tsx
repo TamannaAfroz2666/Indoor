@@ -82,11 +82,11 @@ export function MainNavbar() {
   const pathname = usePathname();
 
 
-  const isBookSection =
-    pathname.startsWith("/venues") ||
-    pathname.startsWith("/bookings");
+  const isVenueSection = pathname.startsWith("/venues"); // ADD: venue listing/details route
 
+  const isBookingSection = pathname.startsWith("/bookings");
 
+  const hideMobileTopHeader = pathname.startsWith("/venues")
   const isActiveRoute = (href: string) => {
     if (href === "/") {
       return pathname === "/";
@@ -98,29 +98,39 @@ export function MainNavbar() {
 
   return (
     <>
-        <LoginModal
-      isOpen={isLoginModalOpen}
-      onClose={() => setIsLoginModalOpen(false)}
-    />
-      <header className="fixed left-0 right-0 top-0 z-50 border-b border-gray-300 bg-white md:hidden">
-        <div className="mx-auto flex h-[70px] w-full max-w-[430px] items-center justify-between px-6">
-          <Logo />
-
-          <LocationPicker />
-        </div>
-      </header>
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
+      {!hideMobileTopHeader && (
+        <header className="fixed left-0 right-0 top-0 z-50 border-b border-gray-300 bg-white md:hidden">
+          <div className="mx-auto flex h-[70px] w-full max-w-[430px] items-center justify-between px-6">
+            <Logo />
+            <LocationPicker />
+          </div>
+        </header>
+      )}
 
       {/*     
         mobile-hidden
         md desktop navbar select 
       */}
       <div className="hidden md:block">
-        {isBookSection ? (
-          <BookDesktopNavbar pathname={pathname} />
+        {isVenueSection ? (
+          <VenueDesktopNavbar
+            pathname={pathname}
+            onLogin={() => setIsLoginModalOpen(true)}
+          />
+        ) : isBookingSection ? (
+          <BookDesktopNavbar
+            pathname={pathname}
+            onLogin={() => setIsLoginModalOpen(true)}
+          />
         ) : (
           <HomeDesktopNavbar
             pathname={pathname}
             isActiveRoute={isActiveRoute}
+            onLogin={() => setIsLoginModalOpen(true)}
           />
         )}
       </div>
@@ -201,11 +211,13 @@ navigation
 type HomeDesktopNavbarProps = {
   pathname: string;
   isActiveRoute: (href: string) => boolean;
+  onLogin: () => void;
 };
 
 function HomeDesktopNavbar({
   pathname,
   isActiveRoute,
+  onLogin
 }: HomeDesktopNavbarProps) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // ADD
   return (<>
@@ -242,7 +254,9 @@ function HomeDesktopNavbar({
 
         <button
           type="button"
-          onClick={() => setIsLoginModalOpen(true)}
+          onClick={onLogin}
+
+          // onClick={() => setIsLoginModalOpen(true)}
           className="flex items-center gap-2.5 text-[16px]  font-mediumtext-[#303b36] transition-colors hover:text-[#16b866] "
         >
           <CircleUserRound size={27} strokeWidth={1.8} />
@@ -269,10 +283,12 @@ function HomeDesktopNavbar({
 */
 type BookDesktopNavbarProps = {
   pathname: string;
+  onLogin: () => void;
 };
 
 function BookDesktopNavbar({
   pathname,
+  onLogin
 }: BookDesktopNavbarProps) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // ADD
 
@@ -309,7 +325,8 @@ function BookDesktopNavbar({
 
           <button
             type="button"
-            onClick={() => setIsLoginModalOpen(true)}
+            // onClick={() => setIsLoginModalOpen(true)}
+            onClick={onLogin}
             className="flex items-center gap-2.5 text-[16px]  font-mediumtext-[#303b36] transition-colors hover:text-[#16b866] "
           >
             <CircleUserRound size={27} strokeWidth={1.8} />
@@ -538,6 +555,61 @@ function LocationPicker() {
         </div>
       )}
     </div>
+  );
+}
+
+// venue navbar 
+
+type VenueDesktopNavbarProps = {
+  onLogin: () => void;
+};
+
+function VenueDesktopNavbar({ onLogin }: VenueDesktopNavbarProps) {
+  return (
+    <header className="sticky top-0 z-50 hidden border-b border-[#dce2df] bg-white md:block">
+      <div className="mx-auto flex h-[80px] w-full max-w-[1600px] items-center px-8 lg:px-14">
+        <Logo />
+
+        <div className="ml-auto flex items-center gap-7">
+          <div className="relative">
+            <MapPin size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#26332d]" />
+
+            <select
+              defaultValue="dhaka"
+              aria-label="Select location"
+              className="h-[39px] w-[215px] appearance-none rounded-[7px] border border-[#d8dfdc] bg-white pl-10 pr-4 text-[14px] font-medium text-[#1f2924] outline-none"
+            >
+              <option value="dhaka">Dhaka</option>
+              <option value="chattogram">Chattogram</option>
+              <option value="sylhet">Sylhet</option>
+            </select>
+          </div>
+
+          {/* <button type="button" className="h-[38px] rounded-[5px] bg-[#05bc66] px-5 text-[14px] font-semibold text-white">
+            Get the App
+          </button> */}
+
+          <nav className="flex h-full items-center gap-8">
+            <Link href="/games" className="text-[13px] font-semibold uppercase text-[#111713]">
+              Play
+            </Link>
+
+            <Link href="/venues" className="flex h-[80px] items-center border-b-[3px] border-[#05b960] px-2 text-[13px] font-semibold uppercase text-[#111713]">
+              Book
+            </Link>
+
+            <Link href="/trainers" className="text-[13px] font-semibold uppercase text-[#111713]">
+              Train
+            </Link>
+          </nav>
+
+          <button type="button" onClick={onLogin} className="flex items-center gap-3 text-[17px] font-medium text-[#222b27]">
+            <CircleUserRound size={26} strokeWidth={1.8} />
+            <span>Login</span>
+          </button>
+        </div>
+      </div>
+    </header>
   );
 }
 
