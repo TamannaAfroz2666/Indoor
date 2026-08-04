@@ -41,7 +41,7 @@ export function HomeHero() {
               href="/register"
               className="inline-flex h-12 items-center justify-center rounded-full border border-[#d8e1dc] px-7 text-[15px] font-semibold text-[#36433d] transition hover:border-[#16b866] hover:text-[#16b866]"
             >
-              Join community
+              Register venue
             </Link>
           </div>
         </div>

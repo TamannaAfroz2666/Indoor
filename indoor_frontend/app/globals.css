@@ -29,6 +29,15 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 14px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  opacity: 0;
+}
+
 /* //login custome css add start  */
 
 /* ============================================
