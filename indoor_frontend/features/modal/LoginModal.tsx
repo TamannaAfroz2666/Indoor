@@ -12,11 +12,13 @@ import PhoneInput, {
 type LoginModalProps = {
     isOpen: boolean;
     onClose: () => void;
+    onLoginSuccess?: () => void;
 };
 
 export function LoginModal({
     isOpen,
     onClose,
+    onLoginSuccess,
 }: LoginModalProps) {
     // ADD: modal open থাকলে body scroll বন্ধ
 // state 
@@ -123,6 +125,8 @@ export function LoginModal({
                             if (!canSendOtp) return;
 
                             console.log("Send OTP to:", phone);
+                            onLoginSuccess?.();
+                            onClose();
                         }}
                     >
                         <label
@@ -216,6 +220,10 @@ export function LoginModal({
                             {/* Google login */}
                             <button
                                 type="button"
+                                onClick={() => {
+                                    onLoginSuccess?.();
+                                    onClose();
+                                }}
                                 className="flex flex-col items-center gap-2 text-[#1e2723]"
                             >
                                 <span

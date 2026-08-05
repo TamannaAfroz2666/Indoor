@@ -9,9 +9,13 @@ type VenueCardProps = {
 };
 
 export function VenueCard({ venue }: VenueCardProps) {
+
   return (
-    <Link href={`/venues/${venue.id}`} className="group block w-[280px] shrink-0 overflow-hidden rounded-[16px] border border-[#e0e5e2] bg-white p-2 shadow-[0_8px_18px_rgba(30,45,37,0.13)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(30,45,37,0.18)] sm:w-[315px]">
-      <div className="relative h-[165px] overflow-hidden rounded-[11px]">
+
+    <Link href={`/venues/${venue.id}`} target="_blank" rel="noopener noreferrer"
+      className="group block w-full overflow-hidden rounded-[16px] border border-[#e0e5e2] bg-white p-2 shadow-[0_8px_18px_rgba(30,45,37,0.13)]
+      transition duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(30,45,37,0.18)] sm:w-[315px] sm:shrink-0" >
+      <div className="relative h-[190px] overflow-hidden rounded-[11px] sm:h-[165px]">
         <Image src={venue.image} alt={venue.name} fill sizes="415px" className="object-cover transition-transform duration-500 group-hover:scale-105" />
 
         <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/65 to-transparent" />
@@ -42,5 +46,6 @@ export function VenueCard({ venue }: VenueCardProps) {
         </p>
       </div>
     </Link>
+
   );
 }

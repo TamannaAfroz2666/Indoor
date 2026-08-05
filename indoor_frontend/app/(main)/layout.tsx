@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { MainNavbar } from "@/components/common/MainNavbar";
+import { SiteFooter } from "@/components/common/SiteFooter";
 
 type MainLayoutProps = {
   children: ReactNode;
@@ -22,6 +23,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         >
           {children}
         </main>
+        <SiteFooter />
       </div>
     </div>
   );

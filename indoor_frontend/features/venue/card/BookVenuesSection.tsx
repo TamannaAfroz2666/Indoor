@@ -34,10 +34,9 @@ export function BookVenuesSection() {
                     </button>
                 </div>
 
-                <div ref={carouselRef} className="mt-7 flex gap-5 overflow-x-auto scroll-smooth pb-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    {homeVenues.map((venue) => (
-                        <VenueCard key={venue.id} venue={venue} />
-                    ))}
+                <div ref={carouselRef} className="mt-7 grid grid-cols-1 gap-5 pb-5 sm:flex sm:overflow-x-auto sm:scroll-smooth sm:[scrollbar-width:none] sm:[&::-webkit-scrollbar]:hidden">                    {homeVenues.map((venue) => (
+                    <VenueCard key={venue.id} venue={venue} />
+                ))}
                 </div>
 
                 <div className="mt-1 hidden items-center justify-center gap-3 sm:flex">
