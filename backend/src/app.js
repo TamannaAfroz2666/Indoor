@@ -1,0 +1,26 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@as-integrations/express4';
+import { env } from './config/env.js';
+import { typeDefs, resolvers } from './graphql/schema.js';
+import routes from './routes/index.js';
+import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
+
+export async function createApp() {
+  const app = express();
+  const apollo = new ApolloServer({ typeDefs, resolvers });
+  await apollo.start();
+
+  app.disable('x-powered-by');
+  app.use(helmet());
+  app.use(cors({ origin: env.corsOrigin }));
+  app.use(express.json({ limit: '1mb' }));
+  app.use('/api', routes);
+  app.use('/graphql', expressMiddleware(apollo));
+  app.use(notFoundHandler);
+  app.use(errorHandler);
+
+  return { app, apollo };
+}
