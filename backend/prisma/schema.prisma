@@ -7,3 +7,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum AuthProvider {
+  EMAIL
+}
+
+enum AccountType {
+  USER
+  VENUE_OWNER
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String?        @unique
+  phone         String?        @unique
+  name          String?
+  avatar        String?
+  passwordHash  String
+  accountType   AccountType    @default(USER)
+  authProvider  AuthProvider
+  emailVerified Boolean        @default(false)
+  phoneVerified Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}

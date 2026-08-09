@@ -7,6 +7,7 @@ const schema = Joi.object({
   DATABASE_URL: Joi.string().uri().required(),
   CORS_ORIGIN: Joi.string().default('http://localhost:3000'),
   JWT_SECRET: Joi.string().min(32).required(),
+  COOKIE_NAME: Joi.string().default('indoor_session'),
 }).unknown(true);
 
 const { value, error } = schema.validate(process.env, { abortEarly: false });
@@ -21,4 +22,5 @@ export const env = Object.freeze({
   databaseUrl: /** @type {string} */ (value.DATABASE_URL),
   corsOrigin: /** @type {string} */ (value.CORS_ORIGIN),
   jwtSecret: /** @type {string} */ (value.JWT_SECRET),
+  cookieName: /** @type {string} */ (value.COOKIE_NAME),
 });

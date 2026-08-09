@@ -1,243 +1,66 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { Mail, X } from "lucide-react";
-import PhoneInput, {
-    isValidPhoneNumber,
-} from "react-phone-number-input"; // ADD: international phone input
+import Link from "next/link";
+import { FormEvent, useEffect, useState } from "react";
+import { X } from "lucide-react";
+import { authApi } from "@/lib/auth-api";
 
+type LoginModalProps = { isOpen: boolean; onClose: () => void; onLoginSuccess?: () => void };
 
+function messageFor(error: unknown) {
+  return error instanceof Error ? error.message : "Something went wrong. Please try again.";
+}
 
-type LoginModalProps = {
-    isOpen: boolean;
-    onClose: () => void;
-    onLoginSuccess?: () => void;
-};
-
-export function LoginModal({
-    isOpen,
-    onClose,
-    onLoginSuccess,
-}: LoginModalProps) {
-    // ADD: modal open থাকলে body scroll বন্ধ
-// state 
-
-  const [phone, setPhone] = useState<string | undefined>();
-  const [loginMethod, setLoginMethod] =
-    useState<"phone" | "email">("phone");
+export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps) {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleEscape = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handleEscape);
+    return () => { document.body.style.overflow = previousOverflow; window.removeEventListener("keydown", handleEscape); };
+  }, [isOpen, onClose]);
 
+  if (!isOpen) return null;
 
-    useEffect(() => {
-        if (!isOpen) return;
+  async function submit(event: FormEvent) {
+    event.preventDefault(); setBusy(true); setMessage("");
+    try {
+      await authApi.login(email, password);
+      onLoginSuccess?.(); onClose();
+    } catch (error) { setMessage(messageFor(error)); }
+    finally { setBusy(false); }
+  }
 
-        const previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = "hidden";
-
-        return () => {
-            document.body.style.overflow = previousOverflow;
-        };
-    }, [isOpen]);
-
-    // ADD: Escape press করলে modal close
-    useEffect(() => {
-        if (!isOpen) return;
-
-        function handleEscape(event: KeyboardEvent) {
-            if (event.key === "Escape") {
-                onClose();
-            }
-        }
-
-        window.addEventListener("keydown", handleEscape);
-
-        return () => {
-            window.removeEventListener("keydown", handleEscape);
-        };
-    }, [isOpen, onClose]);
-
-    if (!isOpen) return null;
-    // validation update 
-
-    const isPhoneValid = phone ? isValidPhoneNumber(phone) : false;
-
-    const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-    // CHANGE: active login method অনুযায়ী button enable হবে
-    const canSendOtp =
-        loginMethod === "phone"
-            ? isPhoneValid
-            : isEmailValid;
-
-
-
-    return (
-        <div
-            className=" fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-4 py-6 "
-            onMouseDown={onClose}
-        >
-            <div
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="login-modal-title"
-                onMouseDown={(event) => event.stopPropagation()}
-                className="  relative grid h-[min(824px,92vh)] w-full max-w-[960px] overflow-hidden rounded-2xl bg-white shadow-2xl md:grid-cols-[51%_49%] "
-            >
-                {/* LEFT IMAGE — mobile-এ hide */}
-                <div className="relative hidden overflow-hidden bg-[#f8fbf9] md:block">
-                    <Image
-                        src="/images/login.png"
-                        alt="Players available nearby"
-                        fill
-                        priority
-                        sizes="(min-width: 768px) 510px"
-                        className=" object-contain object-center scale-[0.94] "
-                    />
-                </div>
-
-                {/* RIGHT FORM */}
-                <div className="relative overflow-y-auto px-6 py-7 sm:px-8 md:px-8">
-                    <div className="flex items-center justify-between border-b border-[#e2e6e4] pb-6">
-                        <h2
-                            id="login-modal-title"
-                            className="text-[21px] font-semibold text-black"
-                        >
-                            Login
-                        </h2>
-
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            aria-label="Close login modal"
-                            className=" flex h-9 w-9 items-center justify-center rounded-full text-[#4c5a54] transition hover:bg-[#f1f4f2] "
-                        >
-                            <X size={25} strokeWidth={1.6} />
-                        </button>
-                    </div>
-
-                    <form
-                        className="pt-12"
-                        onSubmit={(event) => {
-                            event.preventDefault();
-
-                            if (!canSendOtp) return;
-
-                            console.log("Send OTP to:", phone);
-                            onLoginSuccess?.();
-                            onClose();
-                        }}
-                    >
-                        <label
-                            htmlFor={loginMethod === "phone" ? "phone" : "email"}
-                            className="mb-3 block text-[15px] font-medium text-[#72887e]"
-                        >
-                            {loginMethod === "phone"
-                                ? "Enter Mobile No"
-                                : "Enter Email Address"}
-
-                            <span className="text-red-500"> *</span>
-                        </label>
-
-                        {/* CHANGE: login method অনুযায়ী phone অথবা email field দেখাবে */}
-                        {loginMethod === "phone" ? (
-                            <div className="login-phone-input">
-                                <PhoneInput
-                                    id="phone"
-                                    international
-                                    defaultCountry="BD"
-                                    countryCallingCodeEditable={false}
-                                    value={phone}
-                                    onChange={setPhone}
-                                    placeholder="1XXXXXXXXX"
-                                    aria-label="Enter mobile number"
-                                    className="login-phone-control"
-                                />
-                            </div>
-                        ) : (
-                            <input
-                                id="email"
-                                type="email"
-                                value={email}
-                                onChange={(event) => setEmail(event.target.value)}
-                                placeholder="Enter your email"
-                                autoComplete="email"
-                                className="
-                                    h-[49px]
-                                    w-full
-                                    rounded-lg
-                                    border
-                                    border-[#dce2df]
-                                    bg-white
-                                    px-4
-                                    text-[15px]
-                                    text-[#1e2723]
-                                    outline-none
-                                    transition
-                                    placeholder:text-[#a1aaa6]
-                                    focus:border-[#16b866]
-                                    "
-                            />
-                        )}
-
-                        <button
-                            type="submit"
-                            disabled={!canSendOtp}
-                            className=" mt-4 h-[49px] w-full rounded-lg bg-[#13b968] text-[15px] font-semibold text-white transition hover:bg-[#0da459] disabled:cursor-not-allowed disabled:bg-[#f4f6f5] disabled:text-[#b9c2bd]"
-                        >
-                            Send OTP
-                        </button>
-
-                        <div className="my-10 flex items-center justify-center">
-                            <span className="text-[15px] font-medium text-[#71877d]">
-                                or
-                            </span>
-                        </div>
-
-                        <div className="flex items-start justify-center gap-12">
-                            {/* Email login */}
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setLoginMethod((currentMethod) =>
-                                        currentMethod === "phone" ? "email" : "phone",
-                                    )
-                                }
-                                className="flex flex-col items-center gap-2 text-[#1e2723]"
-                            >
-                                <span
-                                    className=" flex h-[38px]  w-[38px]  items-center justify-center rounded-full border border-[#dce2df] "
-                                >
-                                    <Mail size={20} strokeWidth={1.8} />
-                                </span>
-
-                                 {loginMethod === "email" ? (
-
-                                <span className="text-[15px]">Email</span>):  <span className="text-[15px]">Phone</span>}
-                            </button>
-
-                            {/* Google login */}
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    onLoginSuccess?.();
-                                    onClose();
-                                }}
-                                className="flex flex-col items-center gap-2 text-[#1e2723]"
-                            >
-                                <span
-                                    className=" flex  h-[42px] w-[42px] items-center justify-center rounded-full border border-[#dce2df] text-[20px] font-bold "
-                                >
-                                    G
-                                </span>
-
-                                <span className="text-[15px]">Google</span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+  const inputClass = "h-11 w-full rounded-md border border-[#d8e1ea] px-4 text-[15px] outline-none transition focus:border-[#111827] focus:ring-1 focus:ring-[#111827]";
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-4 py-6" onMouseDown={onClose}>
+      <div role="dialog" aria-modal="true" aria-labelledby="login-modal-title" onMouseDown={(event) => event.stopPropagation()} className="relative grid w-full max-w-[900px] overflow-hidden rounded-2xl bg-white shadow-2xl md:grid-cols-2">
+        <div className="relative hidden min-h-[590px] overflow-hidden bg-[#f8fbf9] md:block">
+          <Image src="/images/login.png" alt="Players available nearby" fill priority sizes="450px" className="object-contain object-center" />
         </div>
-    );
+        <div className="flex items-center px-6 py-10 sm:px-10">
+          <div className="w-full rounded-xl border border-[#d8e1ea] p-5 sm:p-7">
+            <div className="flex items-start justify-between">
+              <div><h2 id="login-modal-title" className="text-2xl font-semibold text-black">Sign in</h2><p className="mt-1 text-sm text-[#24344d]">Sign in to request bookings and manage your account.</p></div>
+              <button type="button" onClick={onClose} aria-label="Close login modal" className="-mr-2 -mt-2 flex h-9 w-9 items-center justify-center rounded-full text-[#4c5a54] hover:bg-[#f1f4f2]"><X size={23} /></button>
+            </div>
+            <form onSubmit={submit} className="mt-6 space-y-4">
+              <label className="block text-sm text-black">Email<input required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={`${inputClass} mt-2`} /></label>
+              <label className="block text-sm text-black">Password<input required minLength={8} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className={`${inputClass} mt-2`} /></label>
+              {message && <p role="alert" className="text-sm text-red-600">{message}</p>}
+              <button disabled={busy} className="h-10 w-full rounded bg-black text-white transition hover:bg-[#222] disabled:opacity-60">{busy ? "Signing in..." : "Sign in"}</button>
+            </form>
+            <p className="mt-4 text-sm text-[#24344d]">Don&apos;t have an account? <Link href="/register" onClick={onClose} className="underline">Register</Link></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

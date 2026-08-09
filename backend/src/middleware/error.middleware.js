@@ -1,7 +1,12 @@
 import { ValidationError } from 'express-validation';
+import { AuthError } from '../services/auth.service.js';
 
 /** @param {unknown} error @param {import('express').Request} _req @param {import('express').Response} res @param {import('express').NextFunction} _next */
 export function errorHandler(error, _req, res, _next) {
+  if (error instanceof AuthError) {
+    res.status(error.status).json({ error: error.message });
+    return;
+  }
   if (error instanceof ValidationError) {
     res.status(error.statusCode).json({
       error: 'Validation failed',
