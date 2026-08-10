@@ -1,45 +1,113 @@
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import { env } from '../config/env.js';
-import * as authModel from '../models/auth.model.js';
+import bcrypt from "bcrypt";
+import { findUserByPhone, createUser, findUserByEmail, getRegisteredUsers, getLoginUsers } from "../models/auth.model.js";
+import jwt from "jsonwebtoken";
 
-export class AuthError extends Error {
-  /** @param {string} message @param {number} status */
-  constructor(message, status = 400) { super(message); this.status = status; }
-}
 
-/** @param {string} email */
-function normalizeEmail(email) { return email.trim().toLowerCase(); }
+// @ts-ignore
+export async function registerUserService(payload) {
+  const {
+    name,
+    phone,
+    email,
+    password,
+    accountType,
+  } = payload;
 
-/** @param {import('@prisma/client').User} user */
-function publicUser(user) {
-  return {
-    id: user.id, email: user.email, phone: user.phone, name: user.name,
-    avatar: user.avatar, accountType: user.accountType,
-    emailVerified: user.emailVerified, phoneVerified: user.phoneVerified,
-  };
-}
+  if (email) {
+    const existingEmail = await findUserByEmail(email);
 
-/** @param {string} userId */
-export function createSessionToken(userId) {
-  return jwt.sign({ sub: userId }, env.jwtSecret, { expiresIn: '7d', issuer: 'indoor-api' });
-}
-
-/** @param {{name: string, phone: string, email: string, password: string, accountType: 'USER'|'VENUE_OWNER'}} input */
-export async function register({ name, phone, email: rawEmail, password, accountType }) {
-  const email = normalizeEmail(rawEmail);
-  if (await authModel.findUserByEmail(email)) throw new AuthError('An account with this email already exists', 409);
-  if (await authModel.findUserByPhone(phone)) throw new AuthError('An account with this phone number already exists', 409);
-  const passwordHash = await bcrypt.hash(password, 12);
-  const user = await authModel.createUser({ name, phone, email, passwordHash, accountType });
-  return { user: publicUser(user), token: createSessionToken(user.id) };
-}
-
-/** @param {string} rawEmail @param {string} password */
-export async function login(rawEmail, password) {
-  const user = await authModel.findUserByEmail(normalizeEmail(rawEmail));
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-    throw new AuthError('Invalid email or password', 401);
+    if (existingEmail) {
+      const error = new Error("Email already registered");
+      // @ts-ignore
+      error.statusCode = 409;
+      throw error;
+    }
   }
-  return { user: publicUser(user), token: createSessionToken(user.id) };
+
+  if (phone) {
+    const existingPhone = await findUserByPhone(phone);
+
+    if (existingPhone) {
+      const error = new Error("Phone number already registered");
+      // @ts-ignore
+      error.statusCode = 409;
+      throw error;
+    }
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  return createUser({
+    name,
+    phone,
+    email,
+    passwordHash,
+    accountType,
+    authProvider: "EMAIL",
+  });
+}
+
+
+export async function getRegisterUserService() {
+  const users = await getRegisteredUsers();
+
+  return users;
+}
+export async function getLoginUserService() {
+  const users = await getLoginUsers();
+
+  return users;
+}
+
+
+
+
+
+// @ts-ignore
+
+export async function loginUserService({ email, password }) {
+  const user = await findUserByEmail(email);
+
+  if (!user) {
+    const error = new Error("Invalid email or password");
+    // @ts-ignore
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const isPasswordValid = await bcrypt.compare(
+    password,
+    user.passwordHash
+  );
+
+  if (!isPasswordValid) {
+    const error = new Error("Invalid email or password");
+    // @ts-ignore
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const JWT_SECRET = process.env.JWT_SECRET;
+
+  if (!JWT_SECRET) {
+    throw new Error("JWT_SECRET is missing");
+  }
+
+  const token = jwt.sign(
+    {
+      userId: user.id,
+      accountType: user.accountType,
+    },
+    JWT_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
+
+  const { passwordHash, ...safeUser } = user;
+
+  return {
+    user: safeUser,
+    token,
+  };
 }

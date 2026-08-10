@@ -1,25 +1,71 @@
-import Joi from 'joi';
+import { body, validationResult } from 'express-validator';
 
-const schemas = {
-  login: Joi.object({
-    email: Joi.string().trim().lowercase().email().required(),
-    password: Joi.string().min(8).max(72).required(),
-  }),
-  register: Joi.object({
-    name: Joi.string().trim().min(2).max(80).required(),
-    phone: Joi.string().trim().pattern(/^01[3-9]\d{8}$/).required().messages({ 'string.pattern.base': 'Phone number must be a valid Bangladeshi number' }),
-    email: Joi.string().trim().lowercase().email().required(),
-    password: Joi.string().min(8).max(72).required(),
-    accountType: Joi.string().valid('USER', 'VENUE_OWNER').required(),
-  }),
-};
 
-/** @param {keyof typeof schemas} name @returns {import('express').RequestHandler} */
-export function validateAuth(name) {
-  return (req, res, next) => {
-    const { value, error } = schemas[name].validate(req.body, { abortEarly: false, stripUnknown: true });
-    if (error) { res.status(400).json({ error: error.details.map((item) => item.message).join(', ') }); return; }
-    req.body = value;
-    next();
-  };
+export const registerValidation = [
+  body("name")
+    .trim()
+    .notEmpty()
+    .withMessage("Name is required")
+    .isLength({ min: 2, max: 80 })
+    .withMessage("Name must be between 2 and 80 characters"),
+
+  body("phone")
+    .trim()
+    .notEmpty()
+    .withMessage("Phone number is required")
+    .matches(/^01[3-9]\d{8}$/)
+    .withMessage("Enter a valid Bangladeshi phone number"),
+
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Enter a valid email")
+    .normalizeEmail(),
+
+  body("password")
+    .notEmpty()
+    .withMessage("Password is required")
+    .isLength({ min: 8, max: 72 })
+    .withMessage("Password must be at least 8 characters"),
+
+  body("accountType")
+    .notEmpty()
+    .withMessage("Account type is required")
+    .isIn(["USER", "VENUE_OWNER"])
+    .withMessage("Account type must be USER or VENUE_OWNER"),
+];
+
+
+export const loginValidation = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Enter a valid email")
+    .normalizeEmail(),
+
+  body("password")
+    .notEmpty()
+    .withMessage("Password is required"),
+];
+
+
+// @ts-ignore
+export function handleValidation(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            success: false,
+            errors: errors.array().map(arr => ({
+                // @ts-ignore
+                field: arr.path,
+                message: arr.msg
+            }))
+        })
+    }
+    next()
+
 }

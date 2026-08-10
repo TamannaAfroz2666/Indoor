@@ -1,25 +1,46 @@
-import { prisma } from '../config/prisma.js';
+// @ts-nocheck
+import { prisma } from "../config/prisma.js";
 
-/** @param {string} email */
-export function findUserByEmail(email) {
-  return prisma.user.findUnique({ where: { email } });
+// import prisma from "../config/prisma.js";
+
+export async function findUserByEmail(email) {
+  return prisma.user.findUnique({
+    where: { email },
+  });
 }
 
-/** @param {string} phone */
-export function findUserByPhone(phone) {
-  return prisma.user.findUnique({ where: { phone } });
+export async function findUserByPhone(phone) {
+  return prisma.user.findUnique({
+    where: { phone },
+  });
 }
 
-/** @param {{email: string, phone: string, name: string, passwordHash: string, accountType: 'USER'|'VENUE_OWNER'}} data */
-export function createUser(data) {
+export async function createUser(data) {
   return prisma.user.create({
-    data: {
-      email: data.email,
-      phone: data.phone,
-      name: data.name,
-      passwordHash: data.passwordHash,
-      accountType: data.accountType,
-      authProvider: 'EMAIL',
+    data,
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      email: true,
+      avatar: true,
+      accountType: true,
+      authProvider: true,
+      emailVerified: true,
+      phoneVerified: true,
+      createdAt: true,
     },
   });
 }
+
+export async function getRegisteredUsers() {
+  return prisma.user.findMany({
+    omit: {
+      passwordHash: true,
+    },
+  });
+} 
+
+export async function getLoginUsers() {
+  return prisma.user.findMany();
+} 

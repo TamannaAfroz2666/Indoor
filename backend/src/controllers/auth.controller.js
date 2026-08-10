@@ -1,33 +1,85 @@
-import { env } from '../config/env.js';
-import * as authService from '../services/auth.service.js';
+import axios from "axios";
+import { getLoginUserService, getRegisterUserService, loginUserService, registerUserService } from "../services/auth.service.js";
 
-const cookieOptions = {
-  httpOnly: true,
-  secure: env.nodeEnv === 'production',
-  sameSite: /** @type {'lax'|'none'} */ (env.nodeEnv === 'production' ? 'none' : 'lax'),
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-  path: '/',
-};
+// @ts-ignore
+export async function registerController(req, res, next) {
+    try {
+        const {
+            name,
+            phone,
+            email,
+            password,
+            accountType,
+        } = req.body;
 
-/** @param {import('express').Response} res @param {{user: object, token: string}} result */
-function respondWithSession(res, result) {
-  res.cookie(env.cookieName, result.token, cookieOptions).status(200).json({ user: result.user });
+        const data = await registerUserService({
+            name,
+            phone,
+            email,
+            password,
+            accountType,
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Account created successfully",
+            data,
+        });
+    } catch (err) {
+        next(err);
+    }
 }
 
-/** @type {import('express').RequestHandler} */
-export async function register(req, res, next) {
-  try {
-    const result = await authService.register(req.body);
-    res.cookie(env.cookieName, result.token, cookieOptions).status(201).json({ user: result.user });
-  } catch (error) { next(error); }
-}
+// @ts-ignore
+export async function getRegisterController(req, res, next) {
+    try {
+        const data = await getRegisterUserService();
 
-/** @type {import('express').RequestHandler} */
-export async function login(req, res, next) {
-  try { respondWithSession(res, await authService.login(req.body.email, req.body.password)); } catch (error) { next(error); }
-}
+        return res.status(201).json({
+            success: true,
+            //   message: "Account created successfully",
+            data,
+        });
+    } catch (err) {
+        next(err);
+    }
+} 
 
-/** @type {import('express').RequestHandler} */
-export function logout(_req, res) {
-  res.clearCookie(env.cookieName, { ...cookieOptions, maxAge: undefined }).status(200).json({ message: 'Logged out' });
-}
+// @ts-ignore
+export async function loginController (req, res, next) {
+    try {
+        const {
+            email,
+            password,
+        } = req.body;
+
+        const data = await loginUserService({
+            email,
+            password,
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Login successfully",
+            data,
+            
+        });
+    } catch (err) {
+        next(err);
+    }
+}  
+
+// @ts-ignore
+export async function getLoginController (req, res, next) {
+    try {
+        const data = await getLoginUserService();
+
+        return res.status(201).json({
+            success: true,
+            //   message: "Account created successfully",
+            data,
+        });
+    } catch (err) {
+        next(err);
+    }
+} 

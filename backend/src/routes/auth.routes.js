@@ -1,9 +1,14 @@
 import { Router } from 'express';
-import * as authController from '../controllers/auth.controller.js';
-import { validateAuth } from '../validations/auth.validation.js';
+import { handleValidation, registerValidation, loginValidation,} from '../validations/auth.validation.js';
+import { getLoginController, getRegisterController, loginController, registerController } from '../controllers/auth.controller.js';
 
 const router = Router();
-router.post('/register', validateAuth('register'), authController.register);
-router.post('/login', validateAuth('login'), authController.login);
-router.post('/logout', authController.logout);
+
+router.post( '/register',registerValidation, handleValidation, registerController);
+
+router.get( '/register', getRegisterController);
+router.post('/login', loginValidation, handleValidation, loginController);
+router.get( '/login', getLoginController);
+router.post('/logout',);
+
 export default router;
