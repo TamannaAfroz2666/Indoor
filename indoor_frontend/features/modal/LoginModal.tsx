@@ -5,29 +5,46 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { authApi } from "@/lib/auth-api";
+import type { LoginPrefill } from "@/lib/registration-login-prefill";
 
-type LoginModalProps = { isOpen: boolean; onClose: () => void; onLoginSuccess?: () => void };
+type LoginModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onLoginSuccess?: () => void;
+  initialCredentials?: LoginPrefill | null;
+};
 
 function messageFor(error: unknown) {
   return error instanceof Error ? error.message : "Something went wrong. Please try again.";
 }
 
-export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export function LoginModal({ isOpen, onClose, onLoginSuccess, initialCredentials }: LoginModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <OpenLoginModal
+      initialCredentials={initialCredentials}
+      onClose={onClose}
+      onLoginSuccess={onLoginSuccess}
+    />
+  );
+}
+
+type OpenLoginModalProps = Omit<LoginModalProps, "isOpen">;
+
+function OpenLoginModal({ onClose, onLoginSuccess, initialCredentials }: OpenLoginModalProps) {
+  const [email, setEmail] = useState(initialCredentials?.email ?? "");
+  const [password, setPassword] = useState(initialCredentials?.password ?? "");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    if (!isOpen) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const handleEscape = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
     window.addEventListener("keydown", handleEscape);
     return () => { document.body.style.overflow = previousOverflow; window.removeEventListener("keydown", handleEscape); };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
+  }, [onClose]);
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setBusy(true); setMessage("");

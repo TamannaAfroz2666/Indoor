@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/auth-api";
+import { setRegistrationLoginPrefill } from "@/lib/registration-login-prefill";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -15,7 +16,11 @@ export default function RegisterPage() {
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setBusy(true); setMessage("");
-    try { await authApi.register(form); router.push("/"); router.refresh(); }
+    try {
+      await authApi.register(form);
+      setRegistrationLoginPrefill({ email: form.email, password: form.password });
+      router.push("/");
+    }
     catch (error) { setMessage(error instanceof Error ? error.message : "Unable to create account"); }
     finally { setBusy(false); }
   }
@@ -29,17 +34,42 @@ export default function RegisterPage() {
         </div>
         <div className="flex items-center overflow-y-auto px-6 py-7 sm:px-10">
           <section className="w-full rounded-xl border border-[#d8e1ea] p-5">
-          <h1 className="text-2xl font-semibold text-black">Register</h1><p className="mt-1 text-sm text-[#24344d]">Create a free account.</p>
-          <form onSubmit={submit} className="mt-5 space-y-3">
-            <label className="block text-sm">Name<input required minLength={2} value={form.name} onChange={(e) => set("name", e.target.value)} autoComplete="name" className={inputClass} /></label>
-            <label className="block text-sm">Phone number<input required pattern="01[3-9][0-9]{8}" placeholder="01XXXXXXXXX" value={form.phone} onChange={(e) => set("phone", e.target.value.replace(/\D/g, "").slice(0, 11))} autoComplete="tel" className={inputClass} /></label>
-            <label className="block text-sm">Email<input required type="email" value={form.email} onChange={(e) => set("email", e.target.value)} autoComplete="email" className={inputClass} /></label>
-            <label className="block text-sm">Password<input required minLength={8} maxLength={72} type="password" value={form.password} onChange={(e) => set("password", e.target.value)} autoComplete="new-password" className={inputClass} /></label>
-            <label className="block text-sm">Account type<select value={form.accountType} onChange={(e) => set("accountType", e.target.value)} className={inputClass}><option value="USER">User (book venues)</option><option value="VENUE_OWNER">Venue owner</option></select></label>
-            {message && <p role="alert" className="text-sm text-red-600">{message}</p>}
-            <button disabled={busy} className="h-10 w-full rounded bg-black text-white hover:bg-[#222] disabled:opacity-60">{busy ? "Creating account..." : "Create account"}</button>
-          </form>
-          <p className="mt-4 text-sm text-[#24344d]">Already have an account? <Link href="/" className="underline">Sign in</Link></p>
+            <h1 className="text-2xl font-semibold text-black">Register</h1>
+            <p className="mt-1 text-sm text-[#24344d]">Create a free account.</p>
+            <form onSubmit={submit} className="mt-5 space-y-3">
+              <label className="block text-sm">
+                Name
+                <input required minLength={2} value={form.name} onChange={(e) => set("name", e.target.value)} autoComplete="name" className={inputClass} />
+              </label>
+              <label className="block text-sm">
+                Phone number
+                <input required pattern="01[3-9][0-9]{8}" placeholder="01XXXXXXXXX" value={form.phone}
+                  onChange={(e) => set("phone", e.target.value.replace(/\D/g, "").slice(0, 11))}
+                  autoComplete="tel" className={inputClass} /></label>
+              <label className="block text-sm">
+                Email
+                <input required type="email" value={form.email} onChange={(e) => set("email", e.target.value)} autoComplete="email" className={inputClass} />
+              </label>
+              <label className="block text-sm">
+                Password
+                <input required minLength={8} maxLength={72} type="password"
+                  value={form.password}
+                  onChange={(e) => set("password", e.target.value)}
+                  autoComplete="new-password" className={inputClass} />
+              </label>
+              <label className="block text-sm">
+                Account type
+                <select value={form.accountType} onChange={(e) => set("accountType", e.target.value)} className={inputClass}>
+                  <option value="USER">User (book venues)</option>
+                  <option value="VENUE_OWNER">Venue owner</option>
+                </select>
+              </label>
+              {message && <p role="alert" className="text-sm text-red-600">{message}</p>}
+              <button disabled={busy}
+                className="h-10 w-full rounded bg-black text-white
+               hover:bg-[#222] disabled:opacity-60">{busy ? "Creating account..." : "Create account"}</button>
+            </form>
+            <p className="mt-4 text-sm text-[#24344d]">Already have an account? <Link href="/" className="underline">Sign in</Link></p>
           </section>
         </div>
       </div>

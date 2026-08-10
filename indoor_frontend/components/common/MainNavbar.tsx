@@ -15,6 +15,11 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "./Logo";
 import { LoginModal } from "@/features/modal/LoginModal";
+import {
+  clearRegistrationLoginPrefill,
+  getRegistrationLoginPrefill,
+  type LoginPrefill,
+} from "@/lib/registration-login-prefill";
 import type { ElementType } from "react";
 
 type MobileNavItem =
@@ -94,13 +99,36 @@ export function MainNavbar() {
 
     return pathname.startsWith(href);
   };
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // ADD
+  const [initialLoginPrefill] = useState(() =>
+    pathname === "/" ? getRegistrationLoginPrefill() : null,
+  );
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(
+    () => initialLoginPrefill !== null,
+  );
+  const [loginPrefill, setLoginPrefill] = useState<LoginPrefill | null>(
+    initialLoginPrefill,
+  );
+
+  useEffect(() => {
+    if (initialLoginPrefill) clearRegistrationLoginPrefill();
+  }, [initialLoginPrefill]);
+
+  const openLogin = () => {
+    setLoginPrefill(null);
+    setIsLoginModalOpen(true);
+  };
+
+  const closeLogin = () => {
+    setIsLoginModalOpen(false);
+    setLoginPrefill(null);
+  };
 
   return (
     <>
       <LoginModal
         isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
+        onClose={closeLogin}
+        initialCredentials={loginPrefill}
       />
       {!hideMobileTopHeader && (
         <header className="fixed left-0 right-0 top-0 z-50 border-b border-gray-300 bg-white md:hidden">
@@ -118,19 +146,18 @@ export function MainNavbar() {
       <div className="hidden md:block">
         {isVenueSection ? (
           <VenueDesktopNavbar
-            pathname={pathname}
-            onLogin={() => setIsLoginModalOpen(true)}
+            onLogin={openLogin}
           />
         ) : isBookingSection ? (
           <BookDesktopNavbar
             pathname={pathname}
-            onLogin={() => setIsLoginModalOpen(true)}
+            onLogin={openLogin}
           />
         ) : (
           <HomeDesktopNavbar
             pathname={pathname}
             isActiveRoute={isActiveRoute}
-            onLogin={() => setIsLoginModalOpen(true)}
+            onLogin={openLogin}
           />
         )}
       </div>
@@ -158,7 +185,7 @@ export function MainNavbar() {
                 <button
                   key={item.label}
                   type="button"
-                  onClick={() => setIsLoginModalOpen(true)}
+                  onClick={openLogin}
                   className={`relative flex flex-col items-center justify-center gap-1 text-[12px] font-medium ${active ? "text-[#12b866]" : "text-[#303b36]"
                     }`}
                 >
