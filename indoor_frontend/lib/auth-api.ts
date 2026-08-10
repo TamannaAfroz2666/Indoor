@@ -1,17 +1,20 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
 
-async function request<T>(path: string, body?: object): Promise<T> {
+async function request<T>(path: string, options?: { method?: string; body?: object }): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
-    method: "POST",
+    method: options?.method ?? "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
+    body: options?.body ? JSON.stringify(options.body) : undefined,
   });
   const payload: unknown = await response.json().catch(() => ({}));
   if (!response.ok) {
     const message = typeof payload === "object" && payload !== null && "error" in payload
       ? String(payload.error) : "Authentication request failed";
     throw new Error(message);
+  }
+  if (typeof payload === "object" && payload !== null && "data" in payload) {
+    return (payload as { data: T }).data;
   }
   return payload as T;
 }
@@ -28,8 +31,10 @@ export type AuthUser = {
 };
 
 export const authApi = {
-  login: (email: string, password: string) => request<{ user: AuthUser }>("/auth/login", { email, password }),
+  login: (email: string, password: string) => request<{ user: AuthUser }>("/auth/login", { body: { email, password } }),
   register: (data: { name: string; phone: string; email: string; password: string; accountType: "USER" | "VENUE_OWNER" }) =>
-    request<{ user: AuthUser }>("/auth/register", data),
+    request<{ user: AuthUser }>("/auth/register", { body: data }),
+  me: () => request<{ user: AuthUser }>("/auth/me", { method: "GET" }),
+  updateAvatar: (avatar: string | null) => request<{ user: AuthUser }>("/auth/me/avatar", { method: "PATCH", body: { avatar } }),
   logout: () => request<{ message: string }>("/auth/logout"),
 };

@@ -6,6 +6,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { authApi } from "@/lib/auth-api";
 import type { LoginPrefill } from "@/lib/registration-login-prefill";
+import { useAuth } from "@/features/auth/AuthProvider";
 
 type LoginModalProps = {
   isOpen: boolean;
@@ -33,6 +34,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess, initialCredentials
 type OpenLoginModalProps = Omit<LoginModalProps, "isOpen">;
 
 function OpenLoginModal({ onClose, onLoginSuccess, initialCredentials }: OpenLoginModalProps) {
+  const { setUser } = useAuth();
   const [email, setEmail] = useState(initialCredentials?.email ?? "");
   const [password, setPassword] = useState(initialCredentials?.password ?? "");
   const [busy, setBusy] = useState(false);
@@ -49,7 +51,8 @@ function OpenLoginModal({ onClose, onLoginSuccess, initialCredentials }: OpenLog
   async function submit(event: FormEvent) {
     event.preventDefault(); setBusy(true); setMessage("");
     try {
-      await authApi.login(email, password);
+      const { user } = await authApi.login(email, password);
+      setUser(user);
       onLoginSuccess?.(); onClose();
     } catch (error) { setMessage(messageFor(error)); }
     finally { setBusy(false); }

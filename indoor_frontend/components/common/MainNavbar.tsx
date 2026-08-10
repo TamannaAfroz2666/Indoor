@@ -15,6 +15,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "./Logo";
 import { LoginModal } from "@/features/modal/LoginModal";
+import { UserProfileMenu } from "./UserProfileMenu";
 import {
   clearRegistrationLoginPrefill,
   getRegistrationLoginPrefill,
@@ -181,26 +182,7 @@ export function MainNavbar() {
 
             // ADD: Login-এর জন্য button render হবে
             if (item.action === "login") {
-              return (
-                <button
-                  key={item.label}
-                  type="button"
-                  onClick={openLogin}
-                  className={`relative flex flex-col items-center justify-center gap-1 text-[12px] font-medium ${active ? "text-[#12b866]" : "text-[#303b36]"
-                    }`}
-                >
-                  <Icon
-                    size={21}
-                    strokeWidth={active ? 2.2 : 1.7}
-                  />
-
-                  <span>{item.label}</span>
-
-                  {active && (
-                    <span className="absolute bottom-0 h-[2px] w-[48px] rounded-full bg-[#12b866]" />
-                  )}
-                </button>
-              );
+              return <UserProfileMenu key={item.label} onLogin={openLogin} mobile />;
             }
 
             // Existing route items Link থাকবে
@@ -279,16 +261,7 @@ function HomeDesktopNavbar({
           })}
         </nav>
 
-        <button
-          type="button"
-          onClick={onLogin}
-
-          // onClick={() => setIsLoginModalOpen(true)}
-          className="flex items-center gap-2.5 text-[16px]  font-mediumtext-[#303b36] transition-colors hover:text-[#16b866] "
-        >
-          <CircleUserRound size={27} strokeWidth={1.8} />
-          <span>Login</span>
-        </button>
+        <UserProfileMenu onLogin={onLogin} />
       </div>
     </header>
   </>
@@ -350,15 +323,7 @@ function BookDesktopNavbar({
             My Bookings
           </Link>
 
-          <button
-            type="button"
-            // onClick={() => setIsLoginModalOpen(true)}
-            onClick={onLogin}
-            className="flex items-center gap-2.5 text-[16px]  font-mediumtext-[#303b36] transition-colors hover:text-[#16b866] "
-          >
-            <CircleUserRound size={27} strokeWidth={1.8} />
-            <span>Login</span>
-          </button>
+          <UserProfileMenu onLogin={onLogin} />
         </div>
       </div>
     </header>
@@ -630,10 +595,7 @@ function VenueDesktopNavbar({ onLogin }: VenueDesktopNavbarProps) {
             </Link>
           </nav>
 
-          <button type="button" onClick={onLogin} className="flex items-center gap-3 text-[17px] font-medium text-[#222b27]">
-            <CircleUserRound size={26} strokeWidth={1.8} />
-            <span>Login</span>
-          </button>
+          <UserProfileMenu onLogin={onLogin} />
         </div>
       </div>
     </header>

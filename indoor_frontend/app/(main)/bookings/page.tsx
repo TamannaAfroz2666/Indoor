@@ -1,0 +1,2 @@
+export default function BookingsPage() { return <MenuPage title="My Bookings" description="Your venue bookings will appear here." />; }
+function MenuPage({ title, description }: { title: string; description: string }) { return <main className="mx-auto min-h-[60vh] max-w-5xl px-6 py-12"><h1 className="text-3xl font-bold text-[#26332d]">{title}</h1><p className="mt-3 text-[#718078]">{description}</p></main>; }

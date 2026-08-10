@@ -44,3 +44,29 @@ export async function getRegisteredUsers() {
 export async function getLoginUsers() {
   return prisma.user.findMany();
 } 
+
+const safeUserSelect = {
+  id: true,
+  name: true,
+  phone: true,
+  email: true,
+  avatar: true,
+  accountType: true,
+  authProvider: true,
+  emailVerified: true,
+  phoneVerified: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
+export function findSafeUserById(id) {
+  return prisma.user.findUnique({ where: { id }, select: safeUserSelect });
+}
+
+export function updateUserAvatar(id, avatar) {
+  return prisma.user.update({
+    where: { id },
+    data: { avatar },
+    select: safeUserSelect,
+  });
+}
