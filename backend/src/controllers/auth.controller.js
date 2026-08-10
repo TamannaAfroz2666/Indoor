@@ -1,7 +1,7 @@
 // @ts-nocheck
 import axios from "axios";
 import { getLoginUserService, getRegisterUserService, loginUserService, registerUserService } from "../services/auth.service.js";
-import { findSafeUserById, updateUserAvatar } from "../models/auth.model.js";
+import { findSafeUserById, findUserByEmailInsensitive, updateUserAvatar, updateUserProfile } from "../models/auth.model.js";
 
 const sessionCookie = {
     httpOnly: true,
@@ -130,6 +130,39 @@ export async function updateAvatarController(req, res, next) {
         next(err);
     }
 }
+
+export async function updateProfileController(req, res, next) {
+    try {
+        const name = typeof req.body.name === "string" ? req.body.name.trim() : "";
+        const email = typeof req.body.email === "string" ? req.body.email.trim().toLowerCase() : "";
+        const avatar = req.body.avatar;
+
+        if (name.length < 2 || name.length > 100) {
+            return res.status(400).json({ error: "Name must be between 2 and 100 characters" });
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ error: "Enter a valid email address" });
+        }
+        if (avatar !== null && (typeof avatar !== "string" || !/^data:image\/(jpeg|png|webp);base64,/.test(avatar))) {
+            return res.status(400).json({ error: "Avatar must be a JPG, PNG, or WebP image" });
+        }
+   
+
+        const existingUser = await findUserByEmailInsensitive(email);
+        if (existingUser && existingUser.id !== req.userId) {
+            return res.status(409).json({ error: "That email is already used by another account" });
+        }
+
+        const user = await updateUserProfile(req.userId, { name, email, avatar });
+        return res.json({ success: true, data: { user } });
+    } catch (err) {
+        if (err?.code === "P2002") {
+            return res.status(409).json({ error: "That email is already used by another account" });
+        }
+        next(err);
+    }
+}
+
 export function logoutController(req, res) {
     res.clearCookie("indoor_session", { ...sessionCookie, maxAge: undefined });
     return res.json({ success: true, data: { message: "Logged out" } });

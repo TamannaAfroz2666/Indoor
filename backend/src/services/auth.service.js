@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { findUserByPhone, createUser, findUserByEmail, getRegisteredUsers, getLoginUsers } from "../models/auth.model.js";
+import { findUserByPhone, createUser, findUserByEmailInsensitive, getRegisteredUsers, getLoginUsers } from "../models/auth.model.js";
 import jwt from "jsonwebtoken";
 
 
@@ -12,9 +12,10 @@ export async function registerUserService(payload) {
     password,
     accountType,
   } = payload;
+  const normalizedEmail = email?.trim().toLowerCase();
 
-  if (email) {
-    const existingEmail = await findUserByEmail(email);
+  if (normalizedEmail) {
+    const existingEmail = await findUserByEmailInsensitive(normalizedEmail);
 
     if (existingEmail) {
       const error = new Error("Email already registered");
@@ -40,7 +41,7 @@ export async function registerUserService(payload) {
   return createUser({
     name,
     phone,
-    email,
+    email: normalizedEmail,
     passwordHash,
     accountType,
     authProvider: "EMAIL",
@@ -66,7 +67,7 @@ export async function getLoginUserService() {
 // @ts-ignore
 
 export async function loginUserService({ email, password }) {
-  const user = await findUserByEmail(email);
+  const user = await findUserByEmailInsensitive(email.trim().toLowerCase());
 
   if (!user) {
     const error = new Error("Invalid email or password");

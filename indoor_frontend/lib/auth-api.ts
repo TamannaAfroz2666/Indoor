@@ -36,5 +36,7 @@ export const authApi = {
     request<{ user: AuthUser }>("/auth/register", { body: data }),
   me: () => request<{ user: AuthUser }>("/auth/me", { method: "GET" }),
   updateAvatar: (avatar: string | null) => request<{ user: AuthUser }>("/auth/me/avatar", { method: "PATCH", body: { avatar } }),
+  updateProfile: (data: { name: string; email: string; avatar: string | null }) =>
+    request<{ user: AuthUser }>("/auth/me", { method: "PATCH", body: data }),
   logout: () => request<{ message: string }>("/auth/logout"),
 };

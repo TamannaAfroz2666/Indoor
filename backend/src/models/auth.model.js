@@ -9,6 +9,12 @@ export async function findUserByEmail(email) {
   });
 }
 
+export async function findUserByEmailInsensitive(email) {
+  return prisma.user.findFirst({
+    where: { email: { equals: email, mode: "insensitive" } },
+  });
+}
+
 export async function findUserByPhone(phone) {
   return prisma.user.findUnique({
     where: { phone },
@@ -67,6 +73,14 @@ export function updateUserAvatar(id, avatar) {
   return prisma.user.update({
     where: { id },
     data: { avatar },
+    select: safeUserSelect,
+  });
+}
+
+export function updateUserProfile(id, data) {
+  return prisma.user.update({
+    where: { id },
+    data,
     select: safeUserSelect,
   });
 }
