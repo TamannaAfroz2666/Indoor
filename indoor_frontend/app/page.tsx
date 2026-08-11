@@ -1,4 +1,4 @@
-import { HomeHero } from "@/features/home/components";
+import { HomeHero, ListVenueCta } from "@/features/home/components";
 import { BookVenuesSection } from "@/features/venue/card/BookVenuesSection";
 import { DiscoverGamesSection } from "@/features/game/DiscoverGamesSection";
 import { OwnerSection } from "@/features/home/components/OwnerSection";
@@ -9,6 +9,7 @@ export default function Home() {
   <div>
     <HomeHero/>
      <BookVenuesSection />
+     <ListVenueCta />
      <DiscoverGamesSection />
      <OwnerSection />
      <SiteFooter />
