@@ -12,7 +12,7 @@ const items = [
   { label: "My Games", href: "/my-games", icon: Gamepad2 },
   { label: "Joined Games", href: "/joined-games", icon: Users },
   { label: "Saved Venues", href: "/saved-venues", icon: Bookmark },
-  { label: "List Your Venue", href: "/venues/new", icon: Store },
+  { label: "List Your Venue", href: "/venues/new/basic-info", icon: Store },
   { label: "Account Settings", href: "/account-settings", icon: Settings },
 ];
 
@@ -85,7 +85,7 @@ export function UserProfileMenu({ onLogin, mobile = false }: { onLogin: () => vo
           </div>
           <div className="py-1">
             {items.map(({ label, href, icon: Icon }) => (
-              <Link key={href} href={href} role="menuitem" onClick={() => setOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition hover:bg-[#f2f7f4] ${pathname === href ? "font-semibold text-[#0b9e57]" : "text-[#303b36]"}`}>
+              <Link key={href} href={href} target={href === "/venues/new/basic-info" ? "_blank" : undefined} rel={href === "/venues/new/basic-info" ? "noopener noreferrer" : undefined} role="menuitem" onClick={() => setOpen(false)} className={`flex items-center gap-3 px-4 py-2.5 text-sm transition hover:bg-[#f2f7f4] ${pathname === href ? "font-semibold text-[#0b9e57]" : "text-[#303b36]"}`}>
                 <Icon size={17} /><span>{label}</span>
               </Link>
             ))}

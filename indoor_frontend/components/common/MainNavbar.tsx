@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   BookOpen,
   CircleUserRound,
@@ -86,6 +86,7 @@ const homeDesktopItems = [
 
 export function MainNavbar() {
   const pathname = usePathname();
+  const router = useRouter();
 
 
   const isVenueSection = pathname.startsWith("/venues"); // ADD: venue listing/details route
@@ -103,8 +104,11 @@ export function MainNavbar() {
   const [initialLoginPrefill] = useState(() =>
     pathname === "/" ? getRegistrationLoginPrefill() : null,
   );
+  const [redirectedForLogin] = useState(() =>
+    pathname === "/" && typeof window !== "undefined" && sessionStorage.getItem("indoor:open-login") === "1",
+  );
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(
-    () => initialLoginPrefill !== null,
+    () => initialLoginPrefill !== null || redirectedForLogin,
   );
   const [loginPrefill, setLoginPrefill] = useState<LoginPrefill | null>(
     initialLoginPrefill,
@@ -112,7 +116,8 @@ export function MainNavbar() {
 
   useEffect(() => {
     if (initialLoginPrefill) clearRegistrationLoginPrefill();
-  }, [initialLoginPrefill]);
+    if (redirectedForLogin) sessionStorage.removeItem("indoor:open-login");
+  }, [initialLoginPrefill, redirectedForLogin]);
 
   const openLogin = () => {
     setLoginPrefill(null);
@@ -124,11 +129,18 @@ export function MainNavbar() {
     setLoginPrefill(null);
   };
 
+  const completeRedirectedLogin = () => {
+    const returnPath = sessionStorage.getItem("indoor:login-return");
+    sessionStorage.removeItem("indoor:login-return");
+    if (returnPath?.startsWith("/venues/new/")) router.push(returnPath);
+  };
+
   return (
     <>
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={closeLogin}
+        onLoginSuccess={completeRedirectedLogin}
         initialCredentials={loginPrefill}
       />
       {!hideMobileTopHeader && (

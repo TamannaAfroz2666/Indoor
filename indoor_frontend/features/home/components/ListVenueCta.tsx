@@ -29,7 +29,9 @@ export function ListVenueCta() {
         </div>
 
         <Link
-          href="/venues/new"
+          href="/venues/new/basic-info"
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[#00af5d] px-6 py-3.5 text-sm font-bold text-white shadow-[0_5px_14px_rgba(0,175,93,0.2)] transition hover:bg-[#008f4c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00af5d] sm:w-auto sm:text-base"
         >
           <Plus size={20} strokeWidth={2.2} aria-hidden="true" />
