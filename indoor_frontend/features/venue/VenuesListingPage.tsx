@@ -3,7 +3,8 @@
 import { useMemo, useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { VenueListingCard } from "./VenueListingCard";
-import { featuredVenues } from "@/utils/data/featuredVenues";
+import { venueApi, toVenueCard } from "@/lib/venue-api";
+import type { VenueCardData } from "@/features/types/venue-search.types";
 
 type VenueTab = "venues" | "coaching" | "events" | "memberships";
 
@@ -18,22 +19,30 @@ export function VenuesListingPage() {
     const [searchText, setSearchText] = useState("");
     const [sport, setSport] = useState("all");
     const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+    const [venues, setVenues] = useState<VenueCardData[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        const controller = new AbortController();
+        venueApi.getAll(controller.signal)
+            .then(({ venues: data }) => { setVenues(data.map(toVenueCard)); setError(""); })
+            .catch((requestError) => { if (requestError.name !== "AbortError") setError(requestError.message || "Unable to load venues."); })
+            .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+        return () => controller.abort();
+    }, []);
 
     const filteredVenues = useMemo(() => {
-        return featuredVenues.filter((venue) => {
+        return venues.filter((venue) => {
             const matchesSearch = venue.name.toLowerCase().includes(searchText.toLowerCase());
-            const matchesSport = sport === "all";
+            const matchesSport = sport === "all" || venue.sports?.some((item) => item.toLowerCase() === sport);
 
             return matchesSearch && matchesSport;
         });
-    }, [searchText, sport]);
+    }, [searchText, sport, venues]);
 
     const visibleVenues = filteredVenues.slice(0, visibleCount);
     const hasMoreVenues = visibleCount < filteredVenues.length;
-
-    useEffect(() => {
-        setVisibleCount(INITIAL_VISIBLE_COUNT);
-    }, [searchText, sport, activeTab]);
 
     function handleShowMore() {
         setVisibleCount((currentCount) =>
@@ -41,7 +50,7 @@ export function VenuesListingPage() {
         );
     }
     const tabs: { label: string; value: VenueTab; count: number }[] = [
-        { label: "Venues", value: "venues", count: featuredVenues.length },
+        { label: "Venues", value: "venues", count: venues.length },
         // { label: "Coaching", value: "coaching", count: 51 },
         { label: "Events", value: "events", count: 26 },
         { label: "Memberships", value: "memberships", count: 27 },
@@ -62,7 +71,7 @@ export function VenuesListingPage() {
                             <input
                                 type="search"
                                 value={searchText}
-                                onChange={(event) => setSearchText(event.target.value)}
+                                onChange={(event) => { setSearchText(event.target.value); setVisibleCount(INITIAL_VISIBLE_COUNT); }}
                                 placeholder="Search by venue name"
                                 className="h-[38px] w-full rounded-[7px] border border-[#d8e1dc] bg-white pl-10 pr-3 text-[14px] text-[#26312c] outline-none focus:border-[#04b963]"
                             />
@@ -70,7 +79,7 @@ export function VenuesListingPage() {
 
                         <select
                             value={sport}
-                            onChange={(event) => setSport(event.target.value)}
+                            onChange={(event) => { setSport(event.target.value); setVisibleCount(INITIAL_VISIBLE_COUNT); }}
                             aria-label="Filter by sport"
                             className="h-[38px] w-full rounded-[7px] border border-[#d8e1dc] bg-white px-4 text-[14px] text-[#26312c] outline-none focus:border-[#04b963] sm:w-[230px]"
                         >
@@ -90,7 +99,7 @@ export function VenuesListingPage() {
                             <button
                                 key={tab.value}
                                 type="button"
-                                onClick={() => setActiveTab(tab.value)}
+                                onClick={() => { setActiveTab(tab.value); setVisibleCount(INITIAL_VISIBLE_COUNT); }}
                                 className={`shrink-0 border-b-[3px] px-1 py-4 text-[14px] font-medium transition ${activeTab === tab.value
                                         ? "border-[#06bd66] text-[#06ad5e]"
                                         : "border-transparent text-[#202923]"
@@ -104,7 +113,13 @@ export function VenuesListingPage() {
             </div>
 
             <section className="mx-auto w-full max-w-[1600px] px-6 py-7 lg:px-14">
-                {activeTab === "venues" ? (
+                {activeTab === "venues" ? (loading ? (
+                    <div className="grid grid-cols-1 gap-x-9 gap-y-10 md:grid-cols-2 xl:grid-cols-3" aria-label="Loading venues">
+                        {Array.from({ length: 6 }, (_, index) => <div key={index} className="h-[318px] animate-pulse rounded-[6px] bg-white shadow-[0_8px_18px_rgba(20,40,30,0.08)]"><div className="h-[210px] bg-[#e5ebe8]" /><div className="space-y-3 p-4"><div className="h-4 w-2/3 rounded bg-[#e5ebe8]" /><div className="h-3 w-1/2 rounded bg-[#edf1ef]" /></div></div>)}
+                    </div>
+                ) : error ? (
+                    <div className="flex min-h-[300px] flex-col items-center justify-center rounded-xl bg-white px-6 text-center"><p className="font-medium text-[#b04444]">Unable to load venues</p><p className="mt-2 text-sm text-[#6b7972]">{error}</p></div>
+                ) : (
                     filteredVenues.length > 0 ? (
                         <>
                             <div className="grid grid-cols-1 gap-x-9 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
@@ -127,7 +142,7 @@ export function VenuesListingPage() {
                         <div className="flex min-h-[300px] items-center justify-center rounded-xl bg-white">
                             <p className="text-[#6b7972]">No venues found.</p>
                         </div>
-                    )
+                    ))
                 ) : (
                     <div className="flex min-h-[300px] items-center justify-center rounded-xl bg-white">
                         <p className="text-[#6b7972]">{activeTab} content will be available soon.</p>

@@ -35,7 +35,7 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
           <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[14px]">
             <span className="font-medium text-[#44514a]">{venue.area}</span>
 
-            <span className="flex items-center gap-1 font-semibold text-[#29352f]">
+            {venue.totalRatings > 0 ? <><span className="flex items-center gap-1 font-semibold text-[#29352f]">
               <Star
                 size={17}
                 className="fill-[#ffb800] text-[#ffb800]"
@@ -45,7 +45,7 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
 
             <span className="text-[#66736c]">
               ({venue.totalRatings} ratings)
-            </span>
+            </span></> : <span className="text-[#66736c]">No ratings yet</span>}
 
             <button
               type="button"

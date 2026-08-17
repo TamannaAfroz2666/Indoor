@@ -13,7 +13,7 @@ export function VenueListingCard({ venue }: VenueListingCardProps) {
   return (
     <Link href={`/venues/${venue.id}`} className="group overflow-hidden rounded-[6px] bg-white shadow-[0_8px_18px_rgba(20,40,30,0.12)] transition hover:-translate-y-1 hover:shadow-[0_12px_25px_rgba(20,40,30,0.17)]">
       <div className="relative h-[210px] overflow-hidden">
-        <Image src={venue.image} alt={venue.name} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition duration-500 group-hover:scale-105" />
+        <Image unoptimized src={venue.image} alt={venue.name} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition duration-500 group-hover:scale-105" />
 
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-between">
           {venue.featured ? (
@@ -38,15 +38,15 @@ export function VenueListingCard({ venue }: VenueListingCardProps) {
             {venue.name}
           </h3>
 
-          <div className="flex shrink-0 items-center gap-1 text-[13px] text-[#45524c]">
+          {venue.rating === null ? <span className="shrink-0 text-[12px] text-[#84918a]">No rating</span> : <div className="flex shrink-0 items-center gap-1 text-[13px] text-[#45524c]">
             <Star size={17} fill="#ffb800" className="text-[#ffb800]" />
             <span>{venue.rating.toFixed(2)}</span>
-            <span className="text-[#6c7872]">({venue.reviewCount})</span>
-          </div>
+            <span className="text-[#6c7872]">({venue.reviewCount ?? 0})</span>
+          </div>}
         </div>
 
         <p className="mt-2 truncate text-[13px] text-[#66756d]">
-          {venue.address} (~{venue.distance.toFixed(1)} km)
+          {venue.address || "Address not available"}{venue.distance === null ? "" : ` (~${venue.distance.toFixed(1)} km)`}
         </p>
 
         <div className="mt-4 flex items-center gap-2 text-[#33413a]">

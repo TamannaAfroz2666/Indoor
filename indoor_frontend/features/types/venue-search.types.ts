@@ -9,13 +9,14 @@ export type VenueCardData = {
   id: string;
   name: string;
   address: string;
-  distance: number;
-  rating: number;
-  reviewCount: number;
+  distance: number | null;
+  rating: number | null;
+  reviewCount: number | null;
   image: string;
   featured: boolean;
   bookable: boolean;
   extraSports?: number;
+  sports?: string[];
 };
 
 // for venue deails page start

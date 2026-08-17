@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, Check, CheckCircle2, ImagePlus, MapPin, Pencil, 
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useVenueDraft } from "./VenueDraftProvider";
 import { validateDraft, validateStep, venueSteps, type DraftPhoto, type ValidationErrors, type VenueDraft, type VenueStep } from "./venue-draft";
+import { venueApi } from "@/lib/venue-api";
 
 const inputClass = "mt-2 h-11 w-full rounded-lg border border-[#d8e1dc] bg-white px-3.5 text-sm text-[#26332d] outline-none transition placeholder:text-[#98a39d] focus:border-[#12b866] focus:ring-2 focus:ring-[#12b866]/10";
 const textAreaClass = `${inputClass} h-28 resize-y py-3`;
@@ -35,7 +36,8 @@ function WizardContent({ step }: { step: VenueStep }) {
   const router = useRouter();
   const { draft, hydrated, resetDraft } = useVenueDraft();
   const [errors, setErrors] = useState<ValidationErrors>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const currentIndex = venueSteps.findIndex((item) => item.slug === step);
 
   function goNext() {
@@ -51,7 +53,7 @@ function WizardContent({ step }: { step: VenueStep }) {
     if (previous) router.push(`/venues/new/${previous.slug}`);
   }
 
-  function submit() {
+  async function submit() {
     const allErrors = validateDraft(draft);
     if (Object.keys(allErrors).length) {
       setErrors(allErrors);
@@ -59,8 +61,17 @@ function WizardContent({ step }: { step: VenueStep }) {
       if (invalidStep) router.push(`/venues/new/${invalidStep.slug}`);
       return;
     }
-    resetDraft();
-    setSubmitted(true);
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      await venueApi.create(draft);
+      resetDraft();
+      router.push("/venues");
+      router.refresh();
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Unable to create the venue. Please try again.");
+      setSubmitting(false);
+    }
   }
 
   function discard() {
@@ -72,17 +83,6 @@ function WizardContent({ step }: { step: VenueStep }) {
   }
 
   if (!hydrated) return <div className="flex min-h-[60vh] items-center justify-center bg-[#f4f7f5] text-sm text-[#65756d]">Restoring your venue draft…</div>;
-
-  if (submitted) return (
-    <main className="min-h-[calc(100vh-80px)] bg-[#f4f7f5] px-4 py-12 text-[#26332d]">
-      <div className="mx-auto max-w-xl rounded-2xl border border-[#d9e7df] bg-white p-8 text-center shadow-sm sm:p-12">
-        <CheckCircle2 className="mx-auto text-[#12b866]" size={58} />
-        <h1 className="mt-5 text-2xl font-bold">Venue draft submitted</h1>
-        <p className="mt-2 text-[#65756d]">Your frontend-only submission was successful. The local draft has been cleared.</p>
-        <Link href="/" className="mt-7 inline-flex rounded-lg bg-[#08ad59] px-6 py-3 font-semibold text-white hover:bg-[#078d4a]">Back to Dashboard</Link>
-      </div>
-    </main>
-  );
 
   return (
     <main className="min-h-[calc(100vh-80px)] bg-[#f4f7f5] px-4 py-7 text-[#26332d] sm:px-6 lg:px-10 lg:py-10">
@@ -101,7 +101,8 @@ function WizardContent({ step }: { step: VenueStep }) {
         <div className="rounded-2xl border border-[#dde5e1] bg-white p-5 shadow-[0_4px_20px_rgba(30,55,42,0.05)] sm:p-7 lg:p-9">
           <StepContent step={step} errors={errors} clearError={(key) => setErrors((current) => { const next = { ...current }; delete next[key]; return next; })} />
           {Object.keys(errors).length > 0 && <p role="alert" className="mt-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">Please correct the highlighted fields before continuing.</p>}
-          <WizardNavigation index={currentIndex} onBack={goBack} onNext={goNext} onSubmit={submit} />
+          {submitError && <p role="alert" className="mt-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{submitError}</p>}
+          <WizardNavigation index={currentIndex} onBack={goBack} onNext={goNext} onSubmit={() => void submit()} submitting={submitting} />
         </div>
       </div>
     </main>
@@ -126,11 +127,11 @@ function Stepper({ currentIndex }: { currentIndex: number }) {
   );
 }
 
-function WizardNavigation({ index, onBack, onNext, onSubmit }: { index: number; onBack: () => void; onNext: () => void; onSubmit: () => void }) {
+function WizardNavigation({ index, onBack, onNext, onSubmit, submitting }: { index: number; onBack: () => void; onNext: () => void; onSubmit: () => void; submitting: boolean }) {
   return <div className={`mt-8 flex gap-3 border-t border-[#edf1ef] pt-6 ${index ? "justify-between" : "justify-end"}`}>
     {index > 0 && <button type="button" onClick={onBack} className="inline-flex items-center gap-2 rounded-lg border border-[#ccd7d1] px-5 py-3 text-sm font-semibold hover:bg-[#f4f7f5]"><ArrowLeft size={17} /> Back</button>}
     {index < 5 ? <button type="button" onClick={onNext} className="inline-flex items-center gap-2 rounded-lg bg-[#08ad59] px-5 py-3 text-sm font-semibold text-white hover:bg-[#078d4a]">Next: {venueSteps[index + 1].label} <ArrowRight size={17} /></button>
-      : <button type="button" onClick={onSubmit} className="inline-flex items-center gap-2 rounded-lg bg-[#08ad59] px-6 py-3 text-sm font-semibold text-white hover:bg-[#078d4a]"><CheckCircle2 size={18} /> Submit Venue</button>}
+      : <button type="button" onClick={onSubmit} disabled={submitting} className="inline-flex items-center gap-2 rounded-lg bg-[#08ad59] px-6 py-3 text-sm font-semibold text-white hover:bg-[#078d4a] disabled:cursor-not-allowed disabled:opacity-60"><CheckCircle2 size={18} /> {submitting ? "Submitting…" : "Submit Venue"}</button>}
   </div>;
 }
 

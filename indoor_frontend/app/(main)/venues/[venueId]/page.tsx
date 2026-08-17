@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import {
-  getVenueById,
-  venues,
-} from "@/utils/data/featuredVenues";
+import { toVenueDetails, venueApi } from "@/lib/venue-api";
 
 import VenueDetailsView from "@/features/venue/venue-details/VenueDetailsView";
 
@@ -14,17 +11,19 @@ type VenueDetailsPageProps = {
   }>;
 };
 
-export function generateStaticParams() {
-  return venues.map((venue) => ({
-    venueId: venue.id,
-  }));
+export const dynamic = "force-dynamic";
+
+async function findVenue(venueId: string) {
+  const { venues } = await venueApi.getAll();
+  const venue = venues.find((item) => item.id === venueId);
+  return venue ? toVenueDetails(venue) : null;
 }
 
 export async function generateMetadata({
   params,
 }: VenueDetailsPageProps): Promise<Metadata> {
   const { venueId } = await params;
-  const venue = getVenueById(venueId);
+  const venue = await findVenue(venueId);
 
   if (!venue) {
     return {
@@ -43,7 +42,7 @@ export default async function VenueDetailsPage({
 }: VenueDetailsPageProps) {
   const { venueId } = await params;
 
-  const venue = getVenueById(venueId);
+  const venue = await findVenue(venueId);
 
   if (!venue) {
     notFound();

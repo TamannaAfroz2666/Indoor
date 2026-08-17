@@ -2,11 +2,12 @@ import Link from "next/link";
 import { ArrowUpRight, ChevronRight, Clock3, MapPin, Medal, Trophy } from "lucide-react";
 import { GameAvatar } from "../GameAvatar";
 import { GameCard } from "../GameCard";
-import { featuredVenues } from "@/utils/data/featuredVenues";
+import { toVenueCard, venueApi } from "@/lib/venue-api";
 import { games, type Game } from "@/utils/data/games";
 
-export function GameDetailsView({ game }: { game: Game }) {
+export async function GameDetailsView({ game }: { game: Game }) {
   const similarGames = games.filter((item) => item.id !== game.id).slice(0, 3);
+  const nearbyVenues = await venueApi.getAll().then(({ venues }) => venues.slice(0, 3).map(toVenueCard)).catch(() => []);
   return (
     <div className="min-h-screen bg-[#f0f3f1] px-4 py-6 sm:px-7 lg:px-10 lg:py-7">
       <div className="mx-auto grid max-w-[1470px] gap-6 lg:grid-cols-[minmax(0,1fr)_330px]">
@@ -88,15 +89,16 @@ export function GameDetailsView({ game }: { game: Game }) {
           <section className="rounded-[24px] bg-white p-6">
             <h2 className="text-xl font-bold text-[#34413b]">Venues nearby</h2>
             <div className="mt-5 space-y-5">
-              {featuredVenues.slice(0, 3).map((venue) =>
+              {nearbyVenues.map((venue) =>
                 <Link key={venue.id} href={`/venues/${venue.id}`} target="_blank" className="flex items-center gap-3">
                   <span className="h-11 w-11 shrink-0 rounded-full bg-cover bg-center" style={{ backgroundImage: `url(${venue.image})` }} />
                   <span className="min-w-0">
                     <span className="block truncate font-medium text-[#334039]">{venue.name}</span>
-                    <span className="mt-1 block text-sm text-[#71877e]">{venue.distance.toFixed(2)} Kms Away</span>
+                    <span className="mt-1 block truncate text-sm text-[#71877e]">{venue.address || "Address not available"}</span>
                   </span>
                 </Link>
               )}
+              {!nearbyVenues.length && <p className="text-sm text-[#71877e]">No nearby venues available.</p>}
             </div>
             <Link href="/venues" target="_blank"
               className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl border border-[#dce3df] 

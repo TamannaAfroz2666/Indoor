@@ -39,6 +39,7 @@ export default function VenueGallery({
     <section>
       <div className="group relative aspect-[16/10] overflow-hidden rounded-[18px] bg-[#e9eeeb] sm:aspect-[16/9] lg:aspect-[16/8.8]">
         <Image
+          unoptimized
           src={images[activeIndex]}
           alt={`${venueName} image ${activeIndex + 1}`}
           fill
@@ -107,6 +108,7 @@ export default function VenueGallery({
               }`}
             >
               <Image
+                unoptimized
                 src={image}
                 alt={`${venueName} thumbnail ${index + 1}`}
                 fill
