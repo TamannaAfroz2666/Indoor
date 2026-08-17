@@ -16,3 +16,4 @@ router.patch('/me', requireAuth, updateProfileController);
 router.post('/logout', logoutController);
 
 export default router;
+

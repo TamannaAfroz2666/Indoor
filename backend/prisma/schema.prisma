@@ -17,16 +17,73 @@ enum AccountType {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String?        @unique
-  phone         String?        @unique
+  id            String       @id @default(uuid())
+  email         String?      @unique
+  phone         String?      @unique
   name          String?
   avatar        String?
   passwordHash  String
-  accountType   AccountType    @default(USER)
+  accountType   AccountType  @default(USER)
   authProvider  AuthProvider
-  emailVerified Boolean        @default(false)
-  phoneVerified Boolean        @default(false)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  emailVerified Boolean      @default(false)
+  phoneVerified Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  venues        Venue[]
+}
+
+model Venue {
+  id                    String       @id @default(uuid())
+  name                  String
+  slug                  String       @unique
+  venueType             String
+  description           String
+  bookingMode           String
+  phone                 String
+  email                 String
+  website               String?
+  businessStatus        String?
+  address1              String
+  address2              String?
+  area                  String
+  city                  String
+  district              String
+  division              String
+  postalCode            String?
+  country               String       @default("Bangladesh")
+  venueSize             Int
+  maximumParticipants   Int
+  minimumBookingMinutes Int
+  maximumBookingMinutes Int
+  bookingLeadTime       Int
+  advanceBookingDays    Int
+  cancellationPolicy    String
+  houseRules            String
+  facilities            String[]
+  environment           String[]
+  courtTypes            String[]
+  highlights            String[]
+  createdByUserId       String
+  createdByUser         User         @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+  photos                VenuePhoto[]
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  @@index([createdByUserId])
+  @@index([city, venueType])
+}
+
+model VenuePhoto {
+  id        String   @id @default(uuid())
+  venueId   String
+  venue     Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  name      String
+  mimeType  String
+  size      Int
+  url       String
+  sortOrder Int
+  createdAt DateTime @default(now())
+
+  @@unique([venueId, sortOrder])
+  @@index([venueId])
 }
