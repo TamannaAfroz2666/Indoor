@@ -34,6 +34,7 @@ export async function createApp() {
   app.disable('x-powered-by');
   app.use(helmet());
   app.use(cors(corsOptions));
+  app.get(['/favicon.ico', '/favicon.png'], (_req, res) => res.status(204).end());
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
   app.use(cookieParser());
@@ -43,4 +44,18 @@ export async function createApp() {
   app.use(errorHandler);
 
   return { app, apollo };
+}
+
+let vercelAppPromise;
+
+/**
+ * Vercel serverless handler. The promise is cached for warm invocations so
+ * Express, Apollo, and their middleware are initialized only once per worker.
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
+export default async function handler(req, res) {
+  vercelAppPromise ??= createApp().then(({ app }) => app);
+  const app = await vercelAppPromise;
+  return app(req, res);
 }
