@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma.js";
 
+/** @type {import('@prisma/client').Prisma.VenueInclude} */
 const venueInclude = {
   photos: { orderBy: { sortOrder: "asc" } },
   createdByUser: {
@@ -14,6 +15,7 @@ const venueInclude = {
   },
 };
 
+/** @type {import('@prisma/client').Prisma.VenueSelect} */
 const venueListSelect = {
   id: true,
   name: true,
@@ -38,6 +40,7 @@ const venueListSelect = {
   _count: { select: { photos: true } },
 };
 
+/** @param {import('@prisma/client').Prisma.VenueCreateArgs['data']} data */
 export function createVenue(data) {
   return prisma.venue.create({ data, select: venueListSelect });
 }
@@ -49,6 +52,7 @@ export function findAllVenues() {
   });
 }
 
+/** @param {string} userId */
 export function getVenuesByUserId(userId) {
   return prisma.venue.findMany({
     where: { createdByUserId: userId },
@@ -57,6 +61,7 @@ export function getVenuesByUserId(userId) {
   });
 }
 
+/** @param {string} id */
 export function findVenueById(id) {
   return prisma.venue.findUnique({
     where: { id },
@@ -64,6 +69,7 @@ export function findVenueById(id) {
   });
 }
 
+/** @param {string} id */
 export function findVenueThumbnail(id) {
   return prisma.venuePhoto.findFirst({
     where: { venueId: id },

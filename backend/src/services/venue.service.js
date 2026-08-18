@@ -1,5 +1,6 @@
 import { createVenue, findAllVenues, findVenueById, findVenueThumbnail, getVenuesByUserId } from "../models/venue.model.js";
 
+/** @param {string} value */
 function slugify(value) {
   return value
     .normalize("NFKD")
@@ -10,11 +11,13 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "") || "venue";
 }
 
+/** @param {string | null | undefined} value */
 function optional(value) {
   const normalized = value?.trim();
   return normalized || null;
 }
 
+/** @param {any} payload @param {string} createdByUserId */
 export async function createVenueService(payload, createdByUserId) {
   const { basicInfo, location, details, amenities, photos } = payload;
   const baseSlug = slugify(basicInfo.venueName);
@@ -50,7 +53,7 @@ export async function createVenueService(payload, createdByUserId) {
     highlights: amenities.highlights,
     createdByUserId,
     photos: {
-      create: photos.map((photo, sortOrder) => ({
+      create: photos.map((/** @type {any} */ photo, /** @type {number} */ sortOrder) => ({
         name: photo.name.trim(),
         mimeType: photo.type,
         size: photo.size,
@@ -67,14 +70,15 @@ export async function createVenueService(payload, createdByUserId) {
         slug: suffix === 1 ? baseSlug : `${baseSlug}-${suffix}`,
       });
     } catch (error) {
-      const slugConflict = error?.code === "P2002" &&
-        (error?.meta?.target === "Venue_slug_key" || error?.meta?.target?.includes?.("slug"));
+      const databaseError = /** @type {{ code?: string, meta?: { target?: string | string[] } }} */ (error);
+      const target = databaseError.meta?.target;
+      const slugConflict = databaseError.code === "P2002" &&
+        (target === "Venue_slug_key" || target?.includes("slug"));
       if (!slugConflict) throw error;
     }
   }
 
-  const error = new Error("Unable to generate a unique venue slug");
-  error.statusCode = 409;
+  const error = Object.assign(new Error("Unable to generate a unique venue slug"), { statusCode: 409 });
   throw error;
 }
 
@@ -82,14 +86,17 @@ export function getVenuesService() {
   return findAllVenues();
 }
 
+/** @param {string} userId */
 export function getMyVenuesService(userId) {
   return getVenuesByUserId(userId);
 }
 
+/** @param {string} id */
 export function getVenueByIdService(id) {
   return findVenueById(id);
 }
 
+/** @param {string} id */
 export function getVenueThumbnailService(id) {
   return findVenueThumbnail(id);
 }

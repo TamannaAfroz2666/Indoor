@@ -7,6 +7,8 @@ import {
   getVenuesService
 } from "../services/venue.service.js";
 
+/** @typedef {import('express').Request & { userId?: string }} AuthenticatedRequest */
+
 // @ts-ignore
 export async function getVenuesController(_req, res, next) {
   try {
@@ -24,6 +26,7 @@ export async function getVenuesController(_req, res, next) {
   }
 }
 
+/** @param {import('express').Request} req @param {import('express').Response} res @param {import('express').NextFunction} next */
 export async function getVenueThumbnailController(req, res, next) {
   try {
     const photo = await getVenueThumbnailService(req.params.venueId);
@@ -44,6 +47,7 @@ export async function getVenueThumbnailController(req, res, next) {
   }
 }
 
+/** @param {import('express').Request} req @param {import('express').Response} res @param {import('express').NextFunction} next */
 export async function getVenueByIdController(req, res, next) {
   try {
     const venue = await getVenueByIdService(req.params.venueId);
@@ -54,8 +58,10 @@ export async function getVenueByIdController(req, res, next) {
   }
 }
 
+/** @param {AuthenticatedRequest} req @param {import('express').Response} res @param {import('express').NextFunction} next */
 export async function getMyVenuesController(req, res, next) {
   try {
+    if (!req.userId) return res.status(401).json({ error: "Authentication required" });
     const venues = await getMyVenuesService(req.userId);
 
     return res.json({
@@ -70,8 +76,10 @@ export async function getMyVenuesController(req, res, next) {
   }
 }
 
+/** @param {AuthenticatedRequest} req @param {import('express').Response} res @param {import('express').NextFunction} next */
 export async function createVenueController(req, res, next) {
   try {
+    if (!req.userId) return res.status(401).json({ error: "Authentication required" });
     const payload = matchedData(req, { locations: ["body"] });
     const venue = await createVenueService(payload, req.userId);
 

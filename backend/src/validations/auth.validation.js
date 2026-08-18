@@ -1,5 +1,6 @@
 import { body, validationResult } from 'express-validator';
 
+/** @param {unknown} value */
 function normalizePhone(value) {
   return String(value).replace(/\D/g, "");
 }

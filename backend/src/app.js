@@ -14,6 +14,7 @@ const allowedOrigins = new Set([
   env.corsOrigin,
 ]);
 
+/** @type {import('cors').CorsOptions} */
 const corsOptions = {
   credentials: true,
   origin(origin, callback) {

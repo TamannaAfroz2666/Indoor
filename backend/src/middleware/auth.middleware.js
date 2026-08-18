@@ -2,6 +2,11 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 import { SESSION_DURATION_SECONDS, sessionCookieClearOptions } from "../config/auth-session.js";
 
+/**
+ * @param {import('express').Request & { userId?: string, user?: { id: string, accountType?: unknown }, sessionExpiresAt?: string | null }} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ */
 export function requireAuth(req, res, next) {
   const token = req.cookies?.[env.cookieName];
 
