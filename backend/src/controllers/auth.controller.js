@@ -64,13 +64,12 @@ export async function loginController(req, res, next) {
 
         res.cookie(env.cookieName, data.token, sessionCookieOptions);
 
-        const { token: _token, ...responseData } = data;
-
         return res.status(201).json({
             success: true,
             message: "Login successfully",
             data: {
-                ...responseData,
+                user: data.user,
+                token: data.token,
                 sessionExpiresAt: new Date(Date.now() + SESSION_DURATION_SECONDS * 1000).toISOString(),
             },
 

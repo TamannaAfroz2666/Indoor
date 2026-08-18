@@ -8,7 +8,9 @@ import { SESSION_DURATION_SECONDS, sessionCookieClearOptions } from "../config/a
  * @param {import('express').NextFunction} next
  */
 export function requireAuth(req, res, next) {
-  const token = req.cookies?.[env.cookieName];
+  const authorization = req.get("authorization");
+  const bearerToken = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
+  const token = bearerToken || req.cookies?.[env.cookieName];
 
   if (!token) {
     return res.status(401).json({

@@ -1,3 +1,5 @@
+import { getStoredAccessToken } from "./auth-token";
+
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
 
 type RequestOptions = {
@@ -8,10 +10,14 @@ type RequestOptions = {
 };
 
 export async function apiRequest<T>(path: string, options?: RequestOptions): Promise<T> {
+  const accessToken = getStoredAccessToken();
   const response = await fetch(`${API_URL}${path}`, {
     method: options?.method ?? "POST",
     credentials: "include",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
     body: options?.body ? JSON.stringify(options.body) : undefined,
     signal: options?.signal,
     cache: options?.cache,

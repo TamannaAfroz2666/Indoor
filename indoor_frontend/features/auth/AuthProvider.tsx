@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { authApi, type AuthUser } from "@/lib/auth-api";
+import { clearStoredAccessToken } from "@/lib/auth-token";
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -20,7 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     authApi.me()
       .then(({ user: currentUser, sessionExpiresAt: expiresAt }) => { setUser(currentUser); setSessionExpiresAt(expiresAt); })
-      .catch(() => { setUser(null); setSessionExpiresAt(null); })
+      .catch(() => { clearStoredAccessToken(); setUser(null); setSessionExpiresAt(null); })
       .finally(() => setLoading(false));
   }, []);
 
@@ -30,13 +31,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const timer = window.setTimeout(() => {
       setUser(null);
       setSessionExpiresAt(null);
+      clearStoredAccessToken();
     }, Math.max(remaining, 0));
     return () => window.clearTimeout(timer);
   }, [sessionExpiresAt, user]);
 
   const updateUser = useCallback((nextUser: AuthUser | null, expiresAt?: string | null) => {
     setUser(nextUser);
-    if (!nextUser) setSessionExpiresAt(null);
+    if (!nextUser) { setSessionExpiresAt(null); clearStoredAccessToken(); }
     else if (expiresAt !== undefined) setSessionExpiresAt(expiresAt);
   }, []);
 
