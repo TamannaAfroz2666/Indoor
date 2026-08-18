@@ -46,16 +46,8 @@ export async function createApp() {
   return { app, apollo };
 }
 
-let vercelAppPromise;
+const { app } = await createApp();
 
-/**
- * Vercel serverless handler. The promise is cached for warm invocations so
- * Express, Apollo, and their middleware are initialized only once per worker.
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- */
-export default async function handler(req, res) {
-  vercelAppPromise ??= createApp().then(({ app }) => app);
-  const app = await vercelAppPromise;
-  return app(req, res);
-}
+// Vercel imports this Express application directly as its serverless handler.
+// Local startup and port binding remain isolated in src/server.js.
+export default app;

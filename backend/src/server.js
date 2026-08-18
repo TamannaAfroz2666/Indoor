@@ -1,9 +1,8 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { createApp } from './app.js';
+import app from './app.js';
 import { env } from './config/env.js';
 
-const { app } = await createApp();
 const server = createServer(app);
 
 
