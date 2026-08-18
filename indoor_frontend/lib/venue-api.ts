@@ -1,8 +1,8 @@
-import { apiRequest } from "./api-client";
+import { API_URL, apiRequest } from "./api-client";
 import type { VenueDraft } from "@/features/venue/create/venue-draft";
 import type { Venue, VenueCardData } from "@/features/types/venue-search.types";
 
-export type ApiVenuePhoto = { id: string; name: string; mimeType: string; size: number; url: string; sortOrder: number };
+export type ApiVenuePhoto = { id: string; name: string; mimeType: string; size: number; url?: string; sortOrder: number };
 export type ApiVenue = {
   id: string; name: string; slug: string; venueType: string; description: string; bookingMode: string;
   phone: string; email: string; website?: string | null; businessStatus?: string | null;
@@ -18,6 +18,9 @@ export type ApiVenue = {
 };
 
 const PLACEHOLDER_IMAGE = "/images/venues/1.png";
+export const venueThumbnail = (venue: ApiVenue) => venue.photos?.[0]
+  ? venue.photos[0].url || `${API_URL}/venues/${encodeURIComponent(venue.id)}/thumbnail`
+  : PLACEHOLDER_IMAGE;
 const compactAddress = (parts: Array<string | null | undefined>) =>
   parts.map((part) => part?.trim()).filter(Boolean).join(", ");
 
@@ -29,7 +32,7 @@ export function toVenueCard(venue: ApiVenue): VenueCardData {
     distance: null,
     rating: typeof venue.averageRating === "number" ? venue.averageRating : null,
     reviewCount: typeof venue.reviewCount === "number" ? venue.reviewCount : null,
-    image: venue.photos?.[0]?.url || PLACEHOLDER_IMAGE,
+    image: venueThumbnail(venue),
     featured: venue.featured === true,
     bookable: venue.bookingMode.toLowerCase().includes("online"),
     extraSports: venue.courtTypes.length > 1 ? venue.courtTypes.length - 1 : undefined,
@@ -46,7 +49,7 @@ export function toVenueDetails(venue: ApiVenue): Venue {
     rating: venue.averageRating ?? 0,
     totalRatings: venue.reviewCount ?? 0,
     description: venue.description,
-    images: venue.photos?.length ? venue.photos.map((photo) => photo.url) : [PLACEHOLDER_IMAGE],
+    images: venue.photos?.length ? venue.photos.map((photo) => photo.url).filter((url): url is string => Boolean(url)) : [PLACEHOLDER_IMAGE],
     featured: venue.featured === true,
     openingHours: "Contact venue for availability",
     address: compactAddress([venue.address1, venue.address2, venue.area, venue.city, venue.district, venue.division, venue.postalCode, venue.country]),

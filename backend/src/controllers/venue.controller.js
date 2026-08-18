@@ -3,6 +3,7 @@ import {
   createVenueService,
   getMyVenuesService,
   getVenueByIdService,
+  getVenueThumbnailService,
   getVenuesService
 } from "../services/venue.service.js";
 
@@ -18,6 +19,26 @@ export async function getVenuesController(_req, res, next) {
         count: venues.length,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getVenueThumbnailController(req, res, next) {
+  try {
+    const photo = await getVenueThumbnailService(req.params.venueId);
+    if (!photo) return res.status(404).end();
+
+    if (/^https?:\/\//i.test(photo.url)) return res.redirect(photo.url);
+    const match = photo.url.match(/^data:(image\/(?:jpeg|png|webp));base64,(.+)$/);
+    if (!match) return res.status(404).end();
+
+    res.set({
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "Cross-Origin-Resource-Policy": "cross-origin",
+      "Content-Type": match[1],
+    });
+    return res.send(Buffer.from(match[2], "base64"));
   } catch (error) {
     next(error);
   }

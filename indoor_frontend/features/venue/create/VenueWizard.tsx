@@ -91,7 +91,6 @@ function WizardContent({ step }: { step: VenueStep }) {
       await venueApi.create(draft);
       resetDraft();
       router.push("/venues");
-      router.refresh();
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Unable to create the venue. Please try again.");
       setSubmitting(false);

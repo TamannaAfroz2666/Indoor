@@ -30,7 +30,11 @@ const venueListSelect = {
   courtTypes: true,
   createdAt: true,
   updatedAt: true,
-  photos: { orderBy: { sortOrder: "asc" }, take: 1 },
+  photos: {
+    orderBy: { sortOrder: "asc" },
+    take: 1,
+    select: { id: true, name: true, mimeType: true, size: true, sortOrder: true },
+  },
   _count: { select: { photos: true } },
 };
 
@@ -57,5 +61,13 @@ export function findVenueById(id) {
   return prisma.venue.findUnique({
     where: { id },
     include: venueInclude,
+  });
+}
+
+export function findVenueThumbnail(id) {
+  return prisma.venuePhoto.findFirst({
+    where: { venueId: id },
+    orderBy: { sortOrder: "asc" },
+    select: { url: true, mimeType: true },
   });
 }
