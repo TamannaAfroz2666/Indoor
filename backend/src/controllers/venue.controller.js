@@ -1,10 +1,33 @@
-// @ts-nocheck
 import { matchedData } from "express-validator";
-import { createVenueService, getVenuesService } from "../services/venue.service.js";
+import {
+  createVenueService,
+  getProfileVenuesService,
+  getVenuesService
+} from "../services/venue.service.js";
 
+// @ts-ignore
 export async function getVenuesController(_req, res, next) {
   try {
     const venues = await getVenuesService();
+
+    return res.json({
+      success: true,
+      data: {
+        venues,
+        count: venues.length,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getProfileVenueController(_req, res, next) {
+  try {
+    const userId = _req.user.id;
+    console.log('userId is', userId);
+    
+    const venues = await getProfileVenuesService(userId);
 
     return res.json({
       success: true,

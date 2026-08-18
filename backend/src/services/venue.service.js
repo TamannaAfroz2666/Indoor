@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { createVenue, findAllVenues } from "../models/venue.model.js";
+import { createVenue, findAllVenues, getVenuesByUserId } from "../models/venue.model.js";
 
 function slugify(value) {
   return value
@@ -81,4 +80,8 @@ export async function createVenueService(payload, createdByUserId) {
 
 export function getVenuesService() {
   return findAllVenues();
+}
+
+export function getProfileVenuesService(userId) {
+  return getVenuesByUserId(userId);
 }

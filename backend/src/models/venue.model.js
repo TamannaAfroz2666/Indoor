@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { prisma } from "../config/prisma.js";
 
 const venueInclude = {
@@ -22,6 +21,13 @@ export function createVenue(data) {
 export function findAllVenues() {
   return prisma.venue.findMany({
     include: venueInclude,
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export function getVenuesByUserId(userId) {
+  return prisma.venue.findMany({
+    where: { createdByUserId: userId },
     orderBy: { createdAt: "desc" },
   });
 }

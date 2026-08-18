@@ -1,4 +1,3 @@
-// @ts-nocheck
 import jwt from "jsonwebtoken";
 
 export function requireAuth(req, res, next) {
@@ -6,14 +5,22 @@ export function requireAuth(req, res, next) {
   const secret = process.env.JWT_SECRET;
 
   if (!token || !secret) {
-    return res.status(401).json({ error: "Authentication required" });
+    return res.status(401).json({
+      error: "Authentication required",
+    });
   }
 
   try {
     const payload = jwt.verify(token, secret);
-    req.userId = payload.userId;
+
+    req.user = {
+      id: payload.userId,
+    };
+
     next();
   } catch {
-    return res.status(401).json({ error: "Authentication required" });
+    return res.status(401).json({
+      error: "Authentication required",
+    });
   }
 }
