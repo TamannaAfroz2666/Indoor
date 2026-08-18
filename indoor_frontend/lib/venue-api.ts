@@ -10,8 +10,10 @@ export type ApiVenue = {
   postalCode?: string | null; country: string; venueSize: number; maximumParticipants: number;
   minimumBookingMinutes: number; maximumBookingMinutes: number; bookingLeadTime: number; advanceBookingDays: number;
   cancellationPolicy: string; houseRules: string; facilities: string[]; environment: string[]; courtTypes: string[];
-  highlights: string[]; photos: ApiVenuePhoto[]; averageRating?: number | null; reviewCount?: number | null;
+  highlights: string[]; photos?: ApiVenuePhoto[]; averageRating?: number | null; reviewCount?: number | null;
   featured?: boolean | null;
+  createdAt: string;
+  updatedAt?: string;
 };
 
 const PLACEHOLDER_IMAGE = "/images/venues/1.png";
@@ -54,6 +56,7 @@ export function toVenueDetails(venue: ApiVenue): Venue {
 
 export const venueApi = {
   getAll: (signal?: AbortSignal) => apiRequest<{ venues: ApiVenue[]; count: number }>("/venues", { method: "GET", signal, cache: "no-store" }),
+  getMine: (signal?: AbortSignal) => apiRequest<{ venues: ApiVenue[]; count: number }>("/venues/profile", { method: "GET", signal, cache: "no-store" }),
   create: (draft: VenueDraft) => apiRequest<{ venue: ApiVenue }>("/venues", {
     method: "POST",
     body: {

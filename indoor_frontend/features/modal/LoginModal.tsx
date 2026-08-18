@@ -51,8 +51,8 @@ function OpenLoginModal({ onClose, onLoginSuccess, initialCredentials }: OpenLog
   async function submit(event: FormEvent) {
     event.preventDefault(); setBusy(true); setMessage("");
     try {
-      const { user } = await authApi.login(email, password);
-      setUser(user);
+      const { user, sessionExpiresAt } = await authApi.login(email, password);
+      setUser(user, sessionExpiresAt);
       onLoginSuccess?.(); onClose();
     } catch (error) { setMessage(messageFor(error)); }
     finally { setBusy(false); }

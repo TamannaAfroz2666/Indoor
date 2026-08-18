@@ -2,14 +2,8 @@
 import axios from "axios";
 import { getLoginUserService, getRegisterUserService, loginUserService, registerUserService } from "../services/auth.service.js";
 import { findSafeUserById, findUserByEmailInsensitive, updateUserAvatar, updateUserProfile } from "../models/auth.model.js";
-
-const sessionCookie = {
-    httpOnly: true,
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: "/",
-};
+import { env } from "../config/env.js";
+import { SESSION_DURATION_SECONDS, sessionCookieClearOptions, sessionCookieOptions } from "../config/auth-session.js";
 
 // @ts-ignore
 export async function registerController(req, res, next) {
@@ -68,12 +62,17 @@ export async function loginController(req, res, next) {
             password,
         });
 
-        res.cookie("indoor_session", data.token, sessionCookie);
+        res.cookie(env.cookieName, data.token, sessionCookieOptions);
+
+        const { token: _token, ...responseData } = data;
 
         return res.status(201).json({
             success: true,
             message: "Login successfully",
-            data,
+            data: {
+                ...responseData,
+                sessionExpiresAt: new Date(Date.now() + SESSION_DURATION_SECONDS * 1000).toISOString(),
+            },
 
         });
     } catch (err) {
@@ -100,7 +99,7 @@ export async function meController(req, res, next) {
     try {
         const user = await findSafeUserById(req.userId);
         if (!user) return res.status(401).json({ error: "Authentication required" });
-        return res.json({ success: true, data: { user } });
+        return res.json({ success: true, data: { user, sessionExpiresAt: req.sessionExpiresAt } });
     } catch (err) {
         next(err);
     }
@@ -164,6 +163,6 @@ export async function updateProfileController(req, res, next) {
 }
 
 export function logoutController(req, res) {
-    res.clearCookie("indoor_session", { ...sessionCookie, maxAge: undefined });
+    res.clearCookie(env.cookieName, sessionCookieClearOptions);
     return res.json({ success: true, data: { message: "Logged out" } });
 }

@@ -12,7 +12,7 @@ const items = [
   { label: "My Games", href: "/my-games", icon: Gamepad2 },
   { label: "Joined Games", href: "/joined-games", icon: Users },
   { label: "Saved Venues", href: "/saved-venues", icon: Bookmark },
-  { label: "List Your Venue", href: "/venues/new/basic-info", icon: Store },
+  { label: "My Venues", href: "/my-venues", icon: Store },
   { label: "Account Settings", href: "/account-settings", icon: Settings },
 ];
 

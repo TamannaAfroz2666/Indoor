@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt";
 import { findUserByPhone, createUser, findUserByEmailInsensitive, getRegisteredUsers, getLoginUsers } from "../models/auth.model.js";
 import jwt from "jsonwebtoken";
+import { env } from "../config/env.js";
+import { SESSION_DURATION_SECONDS } from "../config/auth-session.js";
 
 
 // @ts-ignore
@@ -88,20 +90,14 @@ export async function loginUserService({ email, password }) {
     throw error;
   }
 
-  const JWT_SECRET = process.env.JWT_SECRET;
-
-  if (!JWT_SECRET) {
-    throw new Error("JWT_SECRET is missing");
-  }
-
   const token = jwt.sign(
     {
       userId: user.id,
       accountType: user.accountType,
     },
-    JWT_SECRET,
+    env.jwtSecret,
     {
-      expiresIn: "7d",
+      expiresIn: SESSION_DURATION_SECONDS,
     }
   );
 

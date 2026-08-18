@@ -24,10 +24,7 @@ export async function getVenuesController(_req, res, next) {
 
 export async function getProfileVenueController(_req, res, next) {
   try {
-    const userId = _req.user.id;
-    console.log('userId is', userId);
-    
-    const venues = await getProfileVenuesService(userId);
+    const venues = await getProfileVenuesService(_req.userId);
 
     return res.json({
       success: true,

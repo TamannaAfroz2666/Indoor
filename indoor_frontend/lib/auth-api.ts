@@ -11,11 +11,13 @@ export type AuthUser = {
   phoneVerified: boolean;
 };
 
+export type AuthSession = { user: AuthUser; sessionExpiresAt: string };
+
 export const authApi = {
-  login: (email: string, password: string) => apiRequest<{ user: AuthUser }>("/auth/login", { body: { email, password } }),
+  login: (email: string, password: string) => apiRequest<AuthSession>("/auth/login", { body: { email, password } }),
   register: (data: { name: string; phone: string; email: string; password: string; accountType: "USER" | "VENUE_OWNER" }) =>
     apiRequest<{ user: AuthUser }>("/auth/register", { body: data }),
-  me: () => apiRequest<{ user: AuthUser }>("/auth/me", { method: "GET" }),
+  me: () => apiRequest<AuthSession>("/auth/me", { method: "GET" }),
   updateAvatar: (avatar: string | null) => apiRequest<{ user: AuthUser }>("/auth/me/avatar", { method: "PATCH", body: { avatar } }),
   updateProfile: (data: { name: string; email: string; avatar: string | null }) =>
     apiRequest<{ user: AuthUser }>("/auth/me", { method: "PATCH", body: data }),
