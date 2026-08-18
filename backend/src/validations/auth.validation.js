@@ -1,5 +1,8 @@
 import { body, validationResult } from 'express-validator';
 
+function normalizePhone(value) {
+  return String(value).replace(/\D/g, "");
+}
 
 export const registerValidation = [
   body("name")
@@ -13,8 +16,9 @@ export const registerValidation = [
     .trim()
     .notEmpty()
     .withMessage("Phone number is required")
-    .matches(/^01[3-9]\d{8}$/)
-    .withMessage("Enter a valid Bangladeshi phone number"),
+    .customSanitizer(normalizePhone)
+    .matches(/^\d{7,15}$/)
+    .withMessage("Enter a valid phone number containing 7 to 15 digits"),
 
   body("email")
     .trim()
@@ -55,17 +59,17 @@ export const loginValidation = [
 
 // @ts-ignore
 export function handleValidation(req, res, next) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({
-            success: false,
-            errors: errors.array().map(arr => ({
-                // @ts-ignore
-                field: arr.path,
-                message: arr.msg
-            }))
-        })
-    }
-    next()
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      errors: errors.array().map(arr => ({
+        // @ts-ignore
+        field: arr.path,
+        message: arr.msg
+      }))
+    })
+  }
+  next()
 
 }

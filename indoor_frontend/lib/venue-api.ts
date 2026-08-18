@@ -14,6 +14,7 @@ export type ApiVenue = {
   featured?: boolean | null;
   createdAt: string;
   updatedAt?: string;
+  _count?: { photos: number };
 };
 
 const PLACEHOLDER_IMAGE = "/images/venues/1.png";
@@ -56,7 +57,8 @@ export function toVenueDetails(venue: ApiVenue): Venue {
 
 export const venueApi = {
   getAll: (signal?: AbortSignal) => apiRequest<{ venues: ApiVenue[]; count: number }>("/venues", { method: "GET", signal, cache: "no-store" }),
-  getMine: (signal?: AbortSignal) => apiRequest<{ venues: ApiVenue[]; count: number }>("/venues/profile", { method: "GET", signal, cache: "no-store" }),
+  getMine: (signal?: AbortSignal) => apiRequest<{ venues: ApiVenue[]; count: number }>("/venues/mine", { method: "GET", signal, cache: "no-store" }),
+  getById: (id: string, signal?: AbortSignal) => apiRequest<{ venue: ApiVenue }>(`/venues/${encodeURIComponent(id)}`, { method: "GET", signal, cache: "no-store" }),
   create: (draft: VenueDraft) => apiRequest<{ venue: ApiVenue }>("/venues", {
     method: "POST",
     body: {

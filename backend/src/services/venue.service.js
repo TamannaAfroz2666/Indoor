@@ -1,4 +1,4 @@
-import { createVenue, findAllVenues, getVenuesByUserId } from "../models/venue.model.js";
+import { createVenue, findAllVenues, findVenueById, getVenuesByUserId } from "../models/venue.model.js";
 
 function slugify(value) {
   return value
@@ -82,6 +82,10 @@ export function getVenuesService() {
   return findAllVenues();
 }
 
-export function getProfileVenuesService(userId) {
+export function getMyVenuesService(userId) {
   return getVenuesByUserId(userId);
+}
+
+export function getVenueByIdService(id) {
+  return findVenueById(id);
 }

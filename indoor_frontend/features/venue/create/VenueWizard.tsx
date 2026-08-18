@@ -12,6 +12,30 @@ import { venueApi } from "@/lib/venue-api";
 const inputClass = "mt-2 h-11 w-full rounded-lg border border-[#d8e1dc] bg-white px-3.5 text-sm text-[#26332d] outline-none transition placeholder:text-[#98a39d] focus:border-[#12b866] focus:ring-2 focus:ring-[#12b866]/10";
 const textAreaClass = `${inputClass} h-28 resize-y py-3`;
 
+async function optimizeVenuePhoto(file: File): Promise<DraftPhoto> {
+  const bitmap = await createImageBitmap(file);
+  const maxDimension = 1600;
+  const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext("2d")?.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  const outputType = "image/webp";
+  const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((result) => result ? resolve(result) : reject(new Error("Unable to process image")), outputType, 0.82));
+  const preview = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error ?? new Error("Unable to read image"));
+    reader.readAsDataURL(blob);
+  });
+  const baseName = file.name.replace(/\.[^.]+$/, "");
+  return { id: crypto.randomUUID(), name: `${baseName}.webp`, type: outputType, size: blob.size, preview };
+}
+
 export function VenueWizard({ step }: { step: VenueStep }) {
   return <AuthenticatedWizard step={step} />;
 }
@@ -204,7 +228,7 @@ function Photos({ errors, clearError }: StepProps) {
     setPhotoError(""); const images = Array.from(files).filter((file) => file.type.startsWith("image/"));
     if (images.length !== Array.from(files).length) setPhotoError("Only image files are supported.");
     const room = Math.max(0, 8 - draft.photos.length); const selected = images.slice(0, room);
-    const additions = await Promise.all(selected.map((file) => new Promise<DraftPhoto>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve({ id: crypto.randomUUID(), name: file.name, type: file.type, size: file.size, preview: String(reader.result) }); reader.onerror = reject; reader.readAsDataURL(file); })));
+    const additions = await Promise.all(selected.map(optimizeVenuePhoto));
     updateSection("photos", [...draft.photos, ...additions]); clearError("photos");
   }
   function drop(event: DragEvent<HTMLDivElement>) { event.preventDefault(); void addFiles(event.dataTransfer.files); }

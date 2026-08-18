@@ -1,7 +1,8 @@
 import { matchedData } from "express-validator";
 import {
   createVenueService,
-  getProfileVenuesService,
+  getMyVenuesService,
+  getVenueByIdService,
   getVenuesService
 } from "../services/venue.service.js";
 
@@ -22,9 +23,19 @@ export async function getVenuesController(_req, res, next) {
   }
 }
 
-export async function getProfileVenueController(_req, res, next) {
+export async function getVenueByIdController(req, res, next) {
   try {
-    const venues = await getProfileVenuesService(_req.userId);
+    const venue = await getVenueByIdService(req.params.venueId);
+    if (!venue) return res.status(404).json({ error: "Venue not found" });
+    return res.json({ success: true, data: { venue } });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getMyVenuesController(req, res, next) {
+  try {
+    const venues = await getMyVenuesService(req.userId);
 
     return res.json({
       success: true,

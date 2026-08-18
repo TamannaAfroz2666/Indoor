@@ -14,13 +14,33 @@ const venueInclude = {
   },
 };
 
+const venueListSelect = {
+  id: true,
+  name: true,
+  slug: true,
+  venueType: true,
+  bookingMode: true,
+  businessStatus: true,
+  address1: true,
+  address2: true,
+  area: true,
+  city: true,
+  minimumBookingMinutes: true,
+  maximumBookingMinutes: true,
+  courtTypes: true,
+  createdAt: true,
+  updatedAt: true,
+  photos: { orderBy: { sortOrder: "asc" }, take: 1 },
+  _count: { select: { photos: true } },
+};
+
 export function createVenue(data) {
-  return prisma.venue.create({ data, include: venueInclude });
+  return prisma.venue.create({ data, select: venueListSelect });
 }
 
 export function findAllVenues() {
   return prisma.venue.findMany({
-    include: venueInclude,
+    select: venueListSelect,
     orderBy: { createdAt: "desc" },
   });
 }
@@ -28,6 +48,14 @@ export function findAllVenues() {
 export function getVenuesByUserId(userId) {
   return prisma.venue.findMany({
     where: { createdByUserId: userId },
+    select: venueListSelect,
     orderBy: { createdAt: "desc" },
+  });
+}
+
+export function findVenueById(id) {
+  return prisma.venue.findUnique({
+    where: { id },
+    include: venueInclude,
   });
 }

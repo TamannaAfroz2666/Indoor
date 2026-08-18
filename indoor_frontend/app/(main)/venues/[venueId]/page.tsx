@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 
 import { toVenueDetails, venueApi } from "@/lib/venue-api";
 
@@ -13,11 +14,14 @@ type VenueDetailsPageProps = {
 
 export const dynamic = "force-dynamic";
 
-async function findVenue(venueId: string) {
-  const { venues } = await venueApi.getAll();
-  const venue = venues.find((item) => item.id === venueId);
-  return venue ? toVenueDetails(venue) : null;
-}
+const findVenue = cache(async (venueId: string) => {
+  try {
+    const { venue } = await venueApi.getById(venueId);
+    return toVenueDetails(venue);
+  } catch {
+    return null;
+  }
+});
 
 export async function generateMetadata({
   params,

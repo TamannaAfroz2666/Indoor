@@ -43,9 +43,13 @@ export default function RegisterPage() {
               </label>
               <label className="block text-sm">
                 Phone number
-                <input required pattern="01[3-9][0-9]{8}" placeholder="01XXXXXXXXX" value={form.phone}
-                  onChange={(e) => set("phone", e.target.value.replace(/\D/g, "").slice(0, 11))}
-                  autoComplete="tel" className={inputClass} /></label>
+                <input required type="tel" inputMode="tel" minLength={7} maxLength={15} pattern="[0-9]{7,15}" title="Enter a phone number containing 7 to 15 digits" placeholder="Country code and phone number" value={form.phone}
+                  onChange={(e) => set(
+                    "phone",
+                    e.target.value.replace(/\D/g, "").slice(0, 15)
+                  )}
+                  autoComplete="tel" className={inputClass} />
+              </label>
               <label className="block text-sm">
                 Email
                 <input required type="email" value={form.email} onChange={(e) => set("email", e.target.value)} autoComplete="email" className={inputClass} />

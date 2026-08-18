@@ -9,6 +9,22 @@ import { typeDefs, resolvers } from './graphql/schema.js';
 import routes from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 
+const allowedOrigins = new Set([
+  'http://localhost:3000',
+  env.corsOrigin,
+]);
+
+const corsOptions = {
+  credentials: true,
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Origin is not allowed by CORS'));
+  },
+};
+
 export async function createApp() {
   const app = express();
   const apollo = new ApolloServer({ typeDefs, resolvers });
@@ -16,7 +32,7 @@ export async function createApp() {
 
   app.disable('x-powered-by');
   app.use(helmet());
-  app.use(cors({ origin: env.corsOrigin, credentials: true }));
+  app.use(cors(corsOptions));
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
   app.use(cookieParser());
