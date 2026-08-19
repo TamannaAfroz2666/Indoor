@@ -22,7 +22,11 @@ export const authApi = {
   },
   register: (data: { name: string; phone: string; email: string; password: string; accountType: "USER" | "VENUE_OWNER" }) =>
     apiRequest<{ user: AuthUser }>("/auth/register", { body: data }),
-  me: () => apiRequest<AuthSession>("/auth/me", { method: "GET" }),
+  me: async () => {
+    const session = await apiRequest<AuthSession>("/auth/me", { method: "GET" });
+    if (session.token) storeAccessToken(session.token, session.sessionExpiresAt);
+    return session;
+  },
   updateAvatar: (avatar: string | null) => apiRequest<{ user: AuthUser }>("/auth/me/avatar", { method: "PATCH", body: { avatar } }),
   updateProfile: (data: { name: string; email: string; avatar: string | null }) =>
     apiRequest<{ user: AuthUser }>("/auth/me", { method: "PATCH", body: data }),

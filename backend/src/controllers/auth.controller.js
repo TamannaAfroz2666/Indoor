@@ -98,7 +98,7 @@ export async function meController(req, res, next) {
     try {
         const user = await findSafeUserById(req.userId);
         if (!user) return res.status(401).json({ error: "Authentication required" });
-        return res.json({ success: true, data: { user, sessionExpiresAt: req.sessionExpiresAt } });
+        return res.json({ success: true, data: { user, token: req.authToken, sessionExpiresAt: req.sessionExpiresAt } });
     } catch (err) {
         next(err);
     }
