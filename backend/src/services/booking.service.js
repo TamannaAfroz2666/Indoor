@@ -1,4 +1,4 @@
-import { createBookingWithConflictCheck, findBookingVenueAndSpace } from "../models/booking.model.js";
+import { createBookingWithConflictCheck, findBookingsByUserId, findBookingVenueAndSpace } from "../models/booking.model.js";
 
 /** @param {string} message @param {number} [statusCode] @returns {never} */
 const fail = (message, statusCode = 400) => { throw Object.assign(new Error(message), { statusCode }); };
@@ -30,4 +30,21 @@ export async function createBookingService(payload, userId) {
   }, new Date(startAt.getTime() + payload.duration * 60000));
 
   return { booking, contact: { phone: venue.phone } };
+}
+
+/** @param {string} userId */
+export async function getMyBookingsService(userId) {
+  const bookings = await findBookingsByUserId(userId);
+  return bookings.map(({ venue, ...booking }) => ({
+    ...booking,
+    venue: {
+      id: venue.id,
+      name: venue.name,
+      slug: venue.slug,
+      venueType: venue.venueType,
+      area: venue.area,
+      city: venue.city,
+      photo: venue.photos[0]?.url ?? null,
+    },
+  }));
 }

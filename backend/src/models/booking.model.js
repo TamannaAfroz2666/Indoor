@@ -28,3 +28,36 @@ export function createBookingWithConflictCheck(data, endAt) {
     });
   }, { isolationLevel: "Serializable" });
 }
+
+/** @param {string} userId */
+export function findBookingsByUserId(userId) {
+  return prisma.bookingRequest.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      status: true,
+      startAt: true,
+      duration: true,
+      participants: true,
+      estimatedRate: true,
+      createdAt: true,
+      venue: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          venueType: true,
+          area: true,
+          city: true,
+          photos: {
+            orderBy: { sortOrder: "asc" },
+            take: 1,
+            select: { url: true },
+          },
+        },
+      },
+      space: { select: { id: true, name: true, sport: true } },
+    },
+  });
+}
