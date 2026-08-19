@@ -2,10 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@as-integrations/express4';
 import { env } from './config/env.js';
-import { typeDefs, resolvers } from './graphql/schema.js';
 import routes from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 
@@ -28,8 +25,6 @@ const corsOptions = {
 
 export async function createApp() {
   const app = express();
-  const apollo = new ApolloServer({ typeDefs, resolvers });
-  await apollo.start();
 
   app.disable('x-powered-by');
   app.use(helmet());
@@ -39,11 +34,10 @@ export async function createApp() {
   app.use(express.urlencoded({ extended: true, limit: "50mb" }));
   app.use(cookieParser());
   app.use('/api', routes);
-  app.use('/graphql', expressMiddleware(apollo));
   app.use(notFoundHandler);
   app.use(errorHandler);
 
-  return { app, apollo };
+  return { app };
 }
 
 const { app } = await createApp();
