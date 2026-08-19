@@ -6,8 +6,9 @@
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
-  "dev": "nodemon src/server.js",
+    "dev": "nodemon src/server.js",
     "typecheck": "tsc --noEmit",
+    "prebuild": "prisma generate",
     "build": "tsc",
     "start": "node dist/server.js",
     "prisma:generate": "prisma generate",
