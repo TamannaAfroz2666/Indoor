@@ -96,4 +96,15 @@ export const createVenueValidation = [
   body("photos.*.preview").isString().withMessage("Photo data is required")
     .bail().matches(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/)
     .withMessage("Photo data must be a valid JPG, PNG, or WebP data URL"),
+  body("spaces").isArray({ min: 1, max: 50 }).withMessage("Add between 1 and 50 bookable spaces"),
+  requiredText("spaces.*.name", "Space name", 120),
+  body("spaces.*.sport").isIn(courtTypes).withMessage("Select a valid sport for each space"),
+  body("spaces.*.hourlyRate").isInt({ min: 1, max: 100000000 }).withMessage("Hourly rate must be a positive integer").toInt(),
+  body("spaces").custom((spaces, { req }) => {
+    if (!Array.isArray(spaces)) return true;
+    const names = spaces.map((space) => String(space.name || "").trim().toLowerCase());
+    if (new Set(names).size !== names.length) throw new Error("Space names must be unique");
+    if (spaces.some((space) => !req.body?.amenities?.courtTypes?.includes(space.sport))) throw new Error("Each space sport must be selected as a court type");
+    return true;
+  }),
 ];

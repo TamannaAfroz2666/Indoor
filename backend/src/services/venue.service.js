@@ -19,7 +19,7 @@ function optional(value) {
 
 /** @param {any} payload @param {string} createdByUserId */
 export async function createVenueService(payload, createdByUserId) {
-  const { basicInfo, location, details, amenities, photos } = payload;
+  const { basicInfo, location, details, amenities, photos, spaces } = payload;
   const baseSlug = slugify(basicInfo.venueName);
 
   const venueData = {
@@ -59,6 +59,13 @@ export async function createVenueService(payload, createdByUserId) {
         size: photo.size,
         url: photo.preview,
         sortOrder,
+      })),
+    },
+    spaces: {
+      create: spaces.map((/** @type {{ name: string, sport: string, hourlyRate: number }} */ space) => ({
+        name: space.name.trim(),
+        sport: space.sport.trim(),
+        hourlyRate: space.hourlyRate,
       })),
     },
   };

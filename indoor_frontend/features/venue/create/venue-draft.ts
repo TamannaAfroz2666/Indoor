@@ -29,6 +29,7 @@ export type VenueDraft = {
   amenities: {
     facilities: string[]; environment: string[]; courtTypes: string[]; highlights: string[];
   };
+  spaces: Array<{ name: string; sport: string; hourlyRate: string }>;
   photos: DraftPhoto[];
 };
 
@@ -37,6 +38,7 @@ export const emptyVenueDraft: VenueDraft = {
   location: { address1: "", address2: "", area: "", city: "", district: "", division: "", postalCode: "", country: "Bangladesh" },
   details: { venueSize: "", maximumParticipants: "", minimumBookingMinutes: "", maximumBookingMinutes: "", bookingLeadTime: "", advanceBookingDays: "", cancellationPolicy: "", houseRules: "" },
   amenities: { facilities: [], environment: [], courtTypes: [], highlights: [] },
+  spaces: [],
   photos: [],
 };
 
@@ -77,6 +79,12 @@ export function validateStep(step: VenueStep, draft: VenueDraft): ValidationErro
     if (!draft.amenities.facilities.length) add("facilities", "Select at least one sports facility.");
     if (!draft.amenities.environment.length) add("environment", "Select indoor or outdoor.");
     if (!draft.amenities.courtTypes.length) add("courtTypes", "Select at least one court type.");
+    if (!draft.spaces.length) add("spaces", "Add at least one bookable court or space.");
+    draft.spaces.forEach((space, index) => {
+      if (!space.name.trim()) add(`space-${index}-name`, "Space name is required.");
+      if (!space.sport || !draft.amenities.courtTypes.includes(space.sport)) add(`space-${index}-sport`, "Select a listed court type.");
+      if (!Number.isInteger(Number(space.hourlyRate)) || Number(space.hourlyRate) <= 0) add(`space-${index}-rate`, "Enter a positive whole-number hourly rate.");
+    });
   }
   if (step === "photos" && !draft.photos.length) add("photos", "Add at least one venue photo.");
   return errors;

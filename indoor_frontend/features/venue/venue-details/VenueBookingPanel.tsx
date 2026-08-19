@@ -10,6 +10,7 @@ import {
   Share2,
 } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 // import type { Venue } from "@/types/venue";
 
 type VenueBookingPanelProps = {
@@ -50,12 +51,12 @@ export default function VenueBookingPanel({
   return (
     <aside className="lg:sticky lg:top-24">
       <div className="rounded-[18px] border border-[#dde5e1] bg-white p-4 shadow-[0_12px_36px_rgba(31,50,40,0.08)] sm:p-5">
-        <button
-          type="button"
+        <Link
+          href={`/venues/${venue.id}/book`}
           className="flex h-[50px] w-full items-center justify-center rounded-[10px] bg-[#00b864] text-[15px] font-bold text-white transition hover:bg-[#009f57]"
         >
           Book now
-        </button>
+        </Link>
 
         <div className="mt-3 grid grid-cols-2 gap-3">
           <button

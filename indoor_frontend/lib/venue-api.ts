@@ -5,13 +5,14 @@ import type { Venue, VenueCardData } from "@/features/types/venue-search.types";
 export type ApiVenuePhoto = { id: string; name: string; mimeType: string; size: number; url?: string; sortOrder: number };
 export type ApiVenue = {
   id: string; name: string; slug: string; venueType: string; description: string; bookingMode: string;
-  phone: string; email: string; website?: string | null; businessStatus?: string | null;
+  phone?: string; email?: string; website?: string | null; businessStatus?: string | null;
   address1: string; address2?: string | null; area: string; city: string; district: string; division: string;
   postalCode?: string | null; country: string; venueSize: number; maximumParticipants: number;
   minimumBookingMinutes: number; maximumBookingMinutes: number; bookingLeadTime: number; advanceBookingDays: number;
   cancellationPolicy: string; houseRules: string; facilities: string[]; environment: string[]; courtTypes: string[];
   highlights: string[]; photos?: ApiVenuePhoto[]; averageRating?: number | null; reviewCount?: number | null;
   featured?: boolean | null;
+  spaces?: Array<{ id: string; venueId?: string; name: string; sport: string; hourlyRate: number }>;
   createdAt: string;
   updatedAt?: string;
   _count?: { photos: number };
@@ -53,7 +54,7 @@ export function toVenueDetails(venue: ApiVenue): Venue {
     featured: venue.featured === true,
     openingHours: "Contact venue for availability",
     address: compactAddress([venue.address1, venue.address2, venue.area, venue.city, venue.district, venue.division, venue.postalCode, venue.country]),
-    sports: venue.courtTypes.map((name, index) => ({ id: `${venue.id}-${index}`, name, pricePerHour: 0 })),
+    sports: (venue.spaces ?? []).map((space) => ({ id: space.id, name: space.sport, pricePerHour: space.hourlyRate })),
     amenities: [...venue.facilities, ...venue.environment, ...venue.highlights],
   };
 }
@@ -75,6 +76,7 @@ export const venueApi = {
         highlights: [...draft.amenities.highlights],
       },
       photos: draft.photos.map(({ name, type, size, preview }) => ({ name, type, size, preview })),
+      spaces: draft.spaces.map((space) => ({ ...space, hourlyRate: Number(space.hourlyRate) })),
     },
   }),
 };

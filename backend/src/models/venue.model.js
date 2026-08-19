@@ -3,6 +3,7 @@ import { prisma } from "../config/prisma.js";
 /** @type {import('@prisma/client').Prisma.VenueInclude} */
 const venueInclude = {
   photos: { orderBy: { sortOrder: "asc" } },
+  spaces: { orderBy: { name: "asc" } },
   createdByUser: {
     select: {
       id: true,
@@ -37,6 +38,7 @@ const venueListSelect = {
     take: 1,
     select: { id: true, name: true, mimeType: true, size: true, sortOrder: true },
   },
+  spaces: { orderBy: { name: "asc" }, select: { id: true, name: true, sport: true, hourlyRate: true } },
   _count: { select: { photos: true } },
 };
 

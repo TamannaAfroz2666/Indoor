@@ -132,7 +132,7 @@ export function MainNavbar() {
   const completeRedirectedLogin = () => {
     const returnPath = sessionStorage.getItem("indoor:login-return");
     sessionStorage.removeItem("indoor:login-return");
-    if (returnPath?.startsWith("/venues/new/")) router.push(returnPath);
+    if (returnPath?.startsWith("/venues/")) router.push(returnPath);
   };
 
   return (

@@ -22,7 +22,7 @@ export function VenueDraftProvider({ children }: { children: React.ReactNode }) 
     const restoreTimer = window.setTimeout(() => {
       try {
         const saved = localStorage.getItem(VENUE_DRAFT_STORAGE_KEY);
-        if (saved) setDraft({ ...emptyVenueDraft, ...JSON.parse(saved) } as VenueDraft);
+        if (saved) { const parsed = JSON.parse(saved); setDraft({ ...emptyVenueDraft, ...parsed, spaces: parsed.spaces ?? [] } as VenueDraft); }
       } catch { localStorage.removeItem(VENUE_DRAFT_STORAGE_KEY); }
       setHydrated(true);
     }, 0);

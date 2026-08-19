@@ -52,7 +52,8 @@ export async function getVenueByIdController(req, res, next) {
   try {
     const venue = await getVenueByIdService(req.params.venueId);
     if (!venue) return res.status(404).json({ error: "Venue not found" });
-    return res.json({ success: true, data: { venue } });
+    const { phone: _phone, email: _email, createdByUser: owner, ...publicVenue } = venue;
+    return res.json({ success: true, data: { venue: { ...publicVenue, createdByUser: owner ? { id: owner.id, name: owner.name, avatar: owner.avatar } : undefined } } });
   } catch (error) {
     next(error);
   }

@@ -17,25 +17,26 @@ enum AccountType {
 }
 
 model User {
-  id            String       @id @default(uuid())
-  email         String?      @unique
-  phone         String?      @unique
-  name          String?
-  avatar        String?
-  passwordHash  String
-  accountType   AccountType  @default(USER)
-  authProvider  AuthProvider
-  emailVerified Boolean      @default(false)
-  phoneVerified Boolean      @default(false)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  venues        Venue[]
+  id              String           @id @default(uuid())
+  email           String?          @unique
+  phone           String?          @unique
+  name            String?
+  avatar          String?
+  passwordHash    String
+  accountType     AccountType      @default(USER)
+  authProvider    AuthProvider
+  emailVerified   Boolean          @default(false)
+  phoneVerified   Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  venues          Venue[]
+  bookingRequests BookingRequest[]
 }
 
 model Venue {
-  id                    String       @id @default(uuid())
+  id                    String           @id @default(uuid())
   name                  String
-  slug                  String       @unique
+  slug                  String           @unique
   venueType             String
   description           String
   bookingMode           String
@@ -50,7 +51,7 @@ model Venue {
   district              String
   division              String
   postalCode            String?
-  country               String       @default("Bangladesh")
+  country               String           @default("Bangladesh")
   venueSize             Int
   maximumParticipants   Int
   minimumBookingMinutes Int
@@ -64,10 +65,12 @@ model Venue {
   courtTypes            String[]
   highlights            String[]
   createdByUserId       String
-  createdByUser         User         @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+  createdByUser         User             @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
   photos                VenuePhoto[]
-  createdAt             DateTime     @default(now())
-  updatedAt             DateTime     @updatedAt
+  spaces                VenueSpace[]
+  bookingRequests       BookingRequest[]
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
 
   @@index([createdByUserId])
   @@index([city, venueType])
@@ -86,4 +89,60 @@ model VenuePhoto {
 
   @@unique([venueId, sortOrder])
   @@index([venueId])
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+model VenueSpace {
+  id         String @id @default(uuid())
+  venueId    String
+  name       String
+  sport      String
+  hourlyRate Int
+
+  venue    Venue            @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  bookings BookingRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([venueId, name])
+  @@index([venueId])
+}
+
+model BookingRequest {
+  id String @id @default(uuid())
+
+  userId  String
+  venueId String
+  spaceId String
+
+  startAt      DateTime
+  duration     Int
+  participants Int?
+  message      String?
+
+  hourlyRate    Int
+  estimatedRate Int
+
+  status BookingStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue Venue      @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  space VenueSpace @relation(fields: [spaceId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([venueId])
+  @@index([spaceId])
+  @@index([status])
+  @@index([startAt])
+  @@index([spaceId, status, startAt])
 }
