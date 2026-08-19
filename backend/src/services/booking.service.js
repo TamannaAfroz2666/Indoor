@@ -1,4 +1,4 @@
-import { createBookingWithConflictCheck, findBookingsByUserId, findBookingVenueAndSpace } from "../models/booking.model.js";
+import { createBookingWithConflictCheck, findBookingByIdForUser, findBookingsByUserId, findBookingVenueAndSpace } from "../models/booking.model.js";
 
 /** @param {string} message @param {number} [statusCode] @returns {never} */
 const fail = (message, statusCode = 400) => { throw Object.assign(new Error(message), { statusCode }); };
@@ -47,4 +47,19 @@ export async function getMyBookingsService(userId) {
       photo: venue.photos[0]?.url ?? null,
     },
   }));
+}
+
+/** @param {string} id @param {string} userId */
+export async function getBookingByIdService(id, userId) {
+  const record = await findBookingByIdForUser(id, userId);
+  if (!record) fail("Booking request not found", 404);
+  const { venue, ...booking } = record;
+  return {
+    ...booking,
+    venue: {
+      id: venue.id, name: venue.name, slug: venue.slug, venueType: venue.venueType,
+      address1: venue.address1, address2: venue.address2, area: venue.area, city: venue.city,
+      phone: venue.phone, photo: venue.photos[0]?.url ?? null,
+    },
+  };
 }

@@ -61,3 +61,37 @@ export function findBookingsByUserId(userId) {
     },
   });
 }
+
+/** @param {string} id @param {string} userId */
+export function findBookingByIdForUser(id, userId) {
+  return prisma.bookingRequest.findFirst({
+    where: { id, userId },
+    select: {
+      id: true,
+      status: true,
+      startAt: true,
+      duration: true,
+      participants: true,
+      message: true,
+      hourlyRate: true,
+      estimatedRate: true,
+      createdAt: true,
+      updatedAt: true,
+      venue: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          venueType: true,
+          address1: true,
+          address2: true,
+          area: true,
+          city: true,
+          phone: true,
+          photos: { orderBy: { sortOrder: "asc" }, take: 1, select: { url: true } },
+        },
+      },
+      space: { select: { id: true, name: true, sport: true, hourlyRate: true } },
+    },
+  });
+}

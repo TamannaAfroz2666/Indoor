@@ -8,18 +8,10 @@ import { CalendarDays, Clock3, MapPin, Users, WalletCards, type LucideIcon } fro
 import { useAuth } from "@/features/auth/AuthProvider";
 import { API_URL } from "@/lib/api-client";
 import { bookingApi, type BookingStatus, type MyBooking } from "@/lib/booking-api";
+import { bookingCurrency, bookingDateFormat, bookingStatusStyle, bookingTimeFormat } from "./booking-display";
 
 type Filter = "ALL" | BookingStatus;
 const filters: Array<[Filter, string]> = [["ALL", "All"], ["PENDING", "Pending"], ["ACCEPTED", "Accepted"], ["DECLINED", "Declined"], ["CANCELLED", "Cancelled"]];
-const statusStyle: Record<BookingStatus, [string, string]> = {
-  PENDING: ["Pending Approval", "bg-amber-50 text-amber-700 ring-amber-200"],
-  ACCEPTED: ["Accepted", "bg-emerald-50 text-emerald-700 ring-emerald-200"],
-  DECLINED: ["Declined", "bg-red-50 text-red-700 ring-red-200"],
-  CANCELLED: ["Cancelled", "bg-slate-100 text-slate-600 ring-slate-200"],
-};
-const currency = new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT", maximumFractionDigits: 0 });
-const dateFormat = new Intl.DateTimeFormat("en-BD", { day: "2-digit", month: "short", year: "numeric" });
-const timeFormat = new Intl.DateTimeFormat("en-US", { hour: "2-digit", minute: "2-digit" });
 
 export function MyBookingsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -64,13 +56,13 @@ export function MyBookingsPage() {
 
 function BookingCard({ booking }: { booking: MyBooking }) {
   const start = new Date(booking.startAt); const end = new Date(start.getTime() + booking.duration * 60000);
-  const [statusLabel, statusClass] = statusStyle[booking.status];
+  const status = bookingStatusStyle[booking.status];
   const photo = booking.venue.photo || `${API_URL}/venues/${encodeURIComponent(booking.venue.id)}/thumbnail`;
   return <article className="overflow-hidden rounded-2xl border border-[#dce5e0] bg-white shadow-[0_4px_18px_rgba(30,55,42,.04)]"><div className="grid md:grid-cols-[250px_1fr]">
-    <div className="relative min-h-48 bg-[#eaf0ed]"><Image src={photo} alt={booking.venue.name} fill unoptimized sizes="(max-width: 768px) 100vw, 250px" className="object-cover" /></div>
-    <div className="p-5 sm:p-6"><div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-bold text-[#1d2923]">{booking.venue.name}</h2><p className="mt-1 flex items-center gap-1.5 text-sm text-[#65756d]"><MapPin size={15} /> {booking.venue.area}, {booking.venue.city}</p><div className="mt-3 flex flex-wrap gap-2"><span className="rounded-full bg-[#eaf8f1] px-3 py-1 text-xs font-semibold text-[#078f4c]">{booking.venue.venueType}</span><span className="rounded-full bg-[#f0f4f2] px-3 py-1 text-xs font-semibold text-[#445149]">{booking.space.sport}</span></div></div><span className={`rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset ${statusClass}`}>{statusLabel}</span></div>
-      <div className="mt-5 grid gap-4 border-t border-[#edf1ef] pt-5 sm:grid-cols-2 xl:grid-cols-4"><Detail icon={CalendarDays} label="Booking date" value={dateFormat.format(start)} /><Detail icon={Clock3} label="Time" value={`${timeFormat.format(start)} – ${timeFormat.format(end)}`} /><Detail icon={Users} label="Participants" value={booking.participants ? `${booking.participants} players` : "Not specified"} /><Detail icon={WalletCards} label="Estimated rate" value={currency.format(booking.estimatedRate)} /></div>
-      <div className="mt-5 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs uppercase tracking-wide text-[#809087]">Court / Space</p><p className="mt-1 font-semibold text-[#26332d]">{booking.space.name} · {booking.duration} minutes</p><p className="mt-2 text-xs text-[#718078]">Requested {dateFormat.format(new Date(booking.createdAt))} at {timeFormat.format(new Date(booking.createdAt))}</p></div><Link href={`/venues/${booking.venue.id}`} className="rounded-lg border border-[#b9d9c8] px-4 py-2.5 text-sm font-bold text-[#078f4c] hover:bg-[#effaf4]">View Venue</Link></div>
+    <Link href={`/bookings/${booking.id}`} aria-label={`View booking details for ${booking.venue.name}`} className="relative min-h-48 bg-[#eaf0ed]"><Image src={photo} alt={booking.venue.name} fill unoptimized sizes="(max-width: 768px) 100vw, 250px" className="object-cover" /></Link>
+    <div className="p-5 sm:p-6"><Link href={`/bookings/${booking.id}`} className="block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[#08ad59]"><div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-bold text-[#1d2923]">{booking.venue.name}</h2><p className="mt-1 flex items-center gap-1.5 text-sm text-[#65756d]"><MapPin size={15} /> {booking.venue.area}, {booking.venue.city}</p><div className="mt-3 flex flex-wrap gap-2"><span className="rounded-full bg-[#eaf8f1] px-3 py-1 text-xs font-semibold text-[#078f4c]">{booking.venue.venueType}</span><span className="rounded-full bg-[#f0f4f2] px-3 py-1 text-xs font-semibold text-[#445149]">{booking.space.sport}</span></div></div><span className={`rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset ${status.className}`}>{status.label}</span></div>
+      <div className="mt-5 grid gap-4 border-t border-[#edf1ef] pt-5 sm:grid-cols-2 xl:grid-cols-4"><Detail icon={CalendarDays} label="Booking date" value={bookingDateFormat.format(start)} /><Detail icon={Clock3} label="Time" value={`${bookingTimeFormat.format(start)} – ${bookingTimeFormat.format(end)}`} /><Detail icon={Users} label="Participants" value={booking.participants ? `${booking.participants} players` : "Not specified"} /><Detail icon={WalletCards} label="Estimated rate" value={bookingCurrency.format(booking.estimatedRate)} /></div></Link>
+      <div className="mt-5 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs uppercase tracking-wide text-[#809087]">Court / Space</p><p className="mt-1 font-semibold text-[#26332d]">{booking.space.name} · {booking.duration} minutes</p><p className="mt-2 text-xs text-[#718078]">Requested {bookingDateFormat.format(new Date(booking.createdAt))} at {bookingTimeFormat.format(new Date(booking.createdAt))}</p></div><div className="flex flex-col gap-2 sm:flex-row"><Link href={`/venues/${booking.venue.id}`} className="rounded-lg border border-[#b9d9c8] px-4 py-2.5 text-center text-sm font-bold text-[#078f4c] hover:bg-[#effaf4]">View Venue</Link><Link href={`/bookings/${booking.id}`} className="rounded-lg bg-[#08ad59] px-4 py-2.5 text-center text-sm font-bold text-white hover:bg-[#078f4c]">View Booking Details</Link></div></div>
     </div></div></article>;
 }
 
