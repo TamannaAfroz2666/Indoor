@@ -19,8 +19,17 @@ export type BookingDetails = Omit<MyBooking, "venue" | "space"> & {
   space: MyBooking["space"] & { hourlyRate: number };
 };
 
+export type OwnerBooking = {
+  id: string; status: BookingStatus; startAt: string; duration: number; participants: number | null;
+  message: string | null; hourlyRate: number; estimatedRate: number; createdAt: string; updatedAt: string;
+  user: { id: string; name: string | null; avatar: string | null; phone: string | null };
+  venue: { id: string; name: string; venueType: string };
+  space: { id: string; name: string; sport: string };
+};
+
 export const bookingApi = {
   create: (body: CreateBookingInput) => apiRequest<BookingResult>("/bookings", { method: "POST", body }),
   getMine: (signal?: AbortSignal) => apiRequest<{ bookings: MyBooking[] }>("/bookings/me", { method: "GET", signal, cache: "no-store" }),
   getById: (id: string, signal?: AbortSignal) => apiRequest<{ booking: BookingDetails }>(`/bookings/${encodeURIComponent(id)}`, { method: "GET", signal, cache: "no-store" }),
+  getForVenue: (venueId: string, signal?: AbortSignal) => apiRequest<{ bookings: OwnerBooking[]; count: number }>(`/venues/${encodeURIComponent(venueId)}/bookings`, { method: "GET", signal, cache: "no-store" }),
 };

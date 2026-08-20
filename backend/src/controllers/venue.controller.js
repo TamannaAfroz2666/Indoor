@@ -6,6 +6,7 @@ import {
   getVenueThumbnailService,
   getVenuesService
 } from "../services/venue.service.js";
+import { getVenueBookingsService } from "../services/booking.service.js";
 
 /** @typedef {import('express').Request & { userId?: string }} AuthenticatedRequest */
 
@@ -92,4 +93,13 @@ export async function createVenueController(req, res, next) {
   } catch (error) {
     next(error);
   }
+}
+
+/** @param {AuthenticatedRequest} req @param {import('express').Response} res @param {import('express').NextFunction} next */
+export async function getVenueBookingsController(req, res, next) {
+  try {
+    if (!req.userId) return res.status(401).json({ success: false, error: "Authentication required" });
+    const bookings = await getVenueBookingsService(req.params.venueId, req.userId);
+    return res.json({ success: true, data: { bookings, count: bookings.length } });
+  } catch (error) { next(error); }
 }

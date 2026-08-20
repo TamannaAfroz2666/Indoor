@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarDays, Clock3, Eye, ImageIcon, MapPin, Pencil, Plus, RefreshCw, Star } from "lucide-react";
+import { CalendarDays, Clock3, Eye, ImageIcon, MapPin, Pencil, Plus, RefreshCw, Star, ClipboardList } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { venueApi, venueThumbnail, type ApiVenue } from "@/lib/venue-api";
@@ -115,7 +115,7 @@ function VenueRow({ venue }: { venue: ApiVenue }) {
           {venue.minimumBookingMinutes != null && <Metric icon={<Clock3 size={17} />} value={`${venue.minimumBookingMinutes} mins`} label="Min booking" />}
           {venue.maximumBookingMinutes != null && <Metric icon={<Clock3 size={17} />} value={`${venue.maximumBookingMinutes} mins`} label="Max booking" />}
         </div>
-        <div className="mt-5 flex flex-wrap gap-3 lg:justify-end"><Link href={`/venues/${venue.id}`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-[#d7dfdb] px-4 py-2.5 text-sm font-medium hover:bg-[#f7f9f8] sm:flex-none"><Eye size={16} /> View Venue</Link><Link href={`/venues/${venue.id}/edit`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-[#9fd5b8] px-4 py-2.5 text-sm font-medium text-[#078d4a] hover:bg-[#f0faf5] sm:flex-none"><Pencil size={16} /> Edit</Link></div>
+        <div className="mt-5 flex flex-wrap gap-3 lg:justify-end"><Link href={`/owner/venues/${venue.id}/bookings`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-[#9fd5b8] px-4 py-2.5 text-sm font-medium text-[#078d4a] hover:bg-[#f0faf5] sm:flex-none"><ClipboardList size={16} /> Booking Requests</Link><Link href={`/venues/${venue.id}`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-[#d7dfdb] px-4 py-2.5 text-sm font-medium hover:bg-[#f7f9f8] sm:flex-none"><Eye size={16} /> View Venue</Link><Link href={`/venues/${venue.id}/edit`} className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-[#9fd5b8] px-4 py-2.5 text-sm font-medium text-[#078d4a] hover:bg-[#f0faf5] sm:flex-none"><Pencil size={16} /> Edit</Link></div>
       </div>
     </article>
   );

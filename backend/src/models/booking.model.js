@@ -95,3 +95,26 @@ export function findBookingByIdForUser(id, userId) {
     },
   });
 }
+
+/** @param {string} venueId */
+export function findVenueBookingOwner(venueId) {
+  return prisma.venue.findUnique({
+    where: { id: venueId },
+    select: { id: true, createdByUserId: true },
+  });
+}
+
+/** @param {string} venueId */
+export function findBookingsByVenueId(venueId) {
+  return prisma.bookingRequest.findMany({
+    where: { venueId },
+    orderBy: [{ createdAt: "desc" }, { startAt: "asc" }],
+    select: {
+      id: true, status: true, startAt: true, duration: true, participants: true,
+      message: true, hourlyRate: true, estimatedRate: true, createdAt: true, updatedAt: true,
+      user: { select: { id: true, name: true, avatar: true, phone: true } },
+      venue: { select: { id: true, name: true, venueType: true } },
+      space: { select: { id: true, name: true, sport: true } },
+    },
+  });
+}

@@ -4,7 +4,8 @@ import {
     getMyVenuesController,
     getVenueByIdController,
     getVenueThumbnailController,
-    getVenuesController
+    getVenuesController,
+    getVenueBookingsController
 } from "../controllers/venue.controller.js";
 import { requireAuth } from "../middleware/auth.middleware.js";
 import { handleValidation } from "../validations/auth.validation.js";
@@ -17,6 +18,7 @@ router.post("/", requireAuth, createVenueValidation, handleValidation, createVen
 
 router.get("/mine", requireAuth, getMyVenuesController);
 router.get("/:venueId/thumbnail", getVenueThumbnailController);
+router.get("/:venueId/bookings", requireAuth, getVenueBookingsController);
 router.get("/:venueId", getVenueByIdController);
 
 export default router;
