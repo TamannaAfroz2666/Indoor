@@ -1,4 +1,8 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
+
+export const bookingIdValidation = [
+  param("id").isUUID().withMessage("A valid booking id is required"),
+];
 
 export const createBookingValidation = [
   body("venueId").isUUID().withMessage("A valid venueId is required"),

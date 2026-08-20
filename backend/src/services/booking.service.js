@@ -1,4 +1,4 @@
-import { createBookingWithConflictCheck, findBookingByIdForUser, findBookingsByUserId, findBookingsByVenueId, findBookingVenueAndSpace, findVenueBookingOwner } from "../models/booking.model.js";
+import { createBookingWithConflictCheck, findBookingByIdForUser, findBookingForOwnerTransition, findBookingsByUserId, findBookingsByVenueId, findBookingVenueAndSpace, findVenueBookingOwner, updatePendingBookingStatus } from "../models/booking.model.js";
 
 /** @param {string} message @param {number} [statusCode] @returns {never} */
 const fail = (message, statusCode = 400) => { throw Object.assign(new Error(message), { statusCode }); };
@@ -70,4 +70,16 @@ export async function getVenueBookingsService(venueId, userId) {
   if (!venue) fail("Venue not found", 404);
   if (venue.createdByUserId !== userId) fail("You do not have access to this venue's booking requests", 403);
   return findBookingsByVenueId(venueId);
+}
+
+/** @param {string} id @param {string} ownerUserId @param {"ACCEPTED" | "DECLINED"} nextStatus */
+export async function transitionBookingByOwnerService(id, ownerUserId, nextStatus) {
+  const booking = await findBookingForOwnerTransition(id);
+  if (!booking) fail("Booking request not found", 404);
+  if (booking.venue.createdByUserId !== ownerUserId) fail("You do not have permission to update this booking request", 403);
+  if (booking.status !== "PENDING") fail(`Only pending booking requests can be ${nextStatus.toLowerCase()}`, 409);
+
+  const updated = await updatePendingBookingStatus(id, nextStatus, ownerUserId);
+  if (!updated) fail("Booking request is no longer pending", 409);
+  return updated;
 }

@@ -118,3 +118,28 @@ export function findBookingsByVenueId(venueId) {
     },
   });
 }
+
+/** @param {string} id */
+export function findBookingForOwnerTransition(id) {
+  return prisma.bookingRequest.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      status: true,
+      venue: { select: { createdByUserId: true } },
+    },
+  });
+}
+
+/** @param {string} id @param {"ACCEPTED" | "DECLINED"} status @param {string} ownerUserId */
+export async function updatePendingBookingStatus(id, status, ownerUserId) {
+  const result = await prisma.bookingRequest.updateMany({
+    where: { id, status: "PENDING", venue: { createdByUserId: ownerUserId } },
+    data: { status },
+  });
+  if (result.count !== 1) return null;
+  return prisma.bookingRequest.findUnique({
+    where: { id },
+    select: { id: true, status: true, updatedAt: true },
+  });
+}

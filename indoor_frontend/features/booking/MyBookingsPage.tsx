@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, Clock3, MapPin, Users, WalletCards, type LucideIcon } from "lucide-react";
+import { CalendarDays, Clock3, MapPin, RefreshCw, Users, WalletCards, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { API_URL } from "@/lib/api-client";
 import { bookingApi, type BookingStatus, type MyBooking } from "@/lib/booking-api";
@@ -19,7 +19,9 @@ export function MyBookingsPage() {
   const [bookings, setBookings] = useState<MyBooking[]>([]);
   const [filter, setFilter] = useState<Filter>("ALL");
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     if (authLoading) return;
@@ -31,11 +33,22 @@ export function MyBookingsPage() {
     }
     const controller = new AbortController();
     bookingApi.getMine(controller.signal)
-      .then(({ bookings: records }) => setBookings(records))
+      .then(({ bookings: records }) => { setBookings(records); setError(""); })
       .catch((cause) => { if (cause instanceof Error && cause.name !== "AbortError") setError(cause.message); })
-      .finally(() => setLoading(false));
+      .finally(() => { if (!controller.signal.aborted) { setLoading(false); setRefreshing(false); } });
     return () => controller.abort();
-  }, [authLoading, router, user]);
+  }, [authLoading, reload, router, user]);
+
+  useEffect(() => {
+    const refreshOnFocus = () => setReload((value) => value + 1);
+    window.addEventListener("focus", refreshOnFocus);
+    return () => window.removeEventListener("focus", refreshOnFocus);
+  }, []);
+
+  function refreshBookings() {
+    setRefreshing(true);
+    setReload((value) => value + 1);
+  }
 
   const counts = useMemo(() => bookings.reduce<Record<Filter, number>>((all, booking) => {
     all.ALL += 1; all[booking.status] += 1; return all;
@@ -45,10 +58,10 @@ export function MyBookingsPage() {
   if (authLoading || !user) return <main className="flex min-h-[60vh] items-center justify-center text-sm text-[#65756d]">Checking your session…</main>;
 
   return <main className="min-h-screen bg-[#f7f9f8] px-4 py-8 sm:px-6 lg:py-10"><div className="mx-auto max-w-[1280px]">
-    <h1 className="text-3xl font-bold text-[#1d2923]">My Booking Requests</h1><p className="mt-2 text-[#65756d]">Track every request and its latest venue response.</p>
+    <div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-3xl font-bold text-[#1d2923]">My Booking Requests</h1><p className="mt-2 text-[#65756d]">Track every request and its latest venue response.</p></div><button type="button" onClick={refreshBookings} disabled={loading || refreshing} className="inline-flex h-11 items-center gap-2 rounded-lg border border-[#b9d9c8] bg-white px-4 text-sm font-bold text-[#078f4c] transition hover:bg-[#effaf4] disabled:cursor-wait disabled:opacity-60"><RefreshCw size={17} className={refreshing ? "animate-spin" : ""} /> {refreshing ? "Refreshing…" : "Refresh"}</button></div>
     <div className="mt-7 overflow-x-auto rounded-xl border border-[#dce5e0] bg-white p-2 shadow-sm"><div className="flex min-w-max gap-2">{filters.map(([value, label]) => <button key={value} type="button" onClick={() => setFilter(value)} className={`flex min-w-[130px] items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold transition ${filter === value ? "bg-[#eaf8f1] text-[#078f4c]" : "text-[#445149] hover:bg-[#f5f8f6]"}`}>{label}<span className={`rounded-full px-2 py-0.5 text-xs ${filter === value ? "bg-[#08ad59] text-white" : "bg-[#edf3f0] text-[#347058]"}`}>{counts[value]}</span></button>)}</div></div>
     {loading && <div className="mt-6 space-y-4">{[1, 2].map((item) => <div key={item} className="h-52 animate-pulse rounded-2xl border bg-white" />)}</div>}
-    {error && <div role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 p-5 text-red-700"><p className="font-semibold">Could not load booking requests</p><p className="mt-1 text-sm">{error}</p><button onClick={() => window.location.reload()} className="mt-3 text-sm font-bold underline">Try again</button></div>}
+    {error && <div role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 p-5 text-red-700"><p className="font-semibold">Could not load booking requests</p><p className="mt-1 text-sm">{error}</p><button onClick={refreshBookings} className="mt-3 text-sm font-bold underline">Try again</button></div>}
     {!loading && !error && !visible.length && <div className="mt-6 rounded-2xl border border-[#dce5e0] bg-white px-6 py-16 text-center"><CalendarDays className="mx-auto text-[#8da098]" size={38} /><h2 className="mt-4 text-xl font-bold">{bookings.length ? `No ${filter.toLowerCase()} requests` : "No booking requests yet"}</h2><p className="mt-2 text-sm text-[#718078]">{bookings.length ? "Choose another status to see your requests." : "Book a venue and your request will appear here."}</p>{!bookings.length && <Link href="/venues" className="mt-5 inline-flex rounded-lg bg-[#08ad59] px-5 py-3 text-sm font-bold text-white">Browse Venues</Link>}</div>}
     {!loading && !error && visible.length > 0 && <div className="mt-6 space-y-4">{visible.map((booking) => <BookingCard key={booking.id} booking={booking} />)}</div>}
   </div></main>;

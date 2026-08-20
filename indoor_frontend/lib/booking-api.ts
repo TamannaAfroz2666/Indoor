@@ -32,4 +32,6 @@ export const bookingApi = {
   getMine: (signal?: AbortSignal) => apiRequest<{ bookings: MyBooking[] }>("/bookings/me", { method: "GET", signal, cache: "no-store" }),
   getById: (id: string, signal?: AbortSignal) => apiRequest<{ booking: BookingDetails }>(`/bookings/${encodeURIComponent(id)}`, { method: "GET", signal, cache: "no-store" }),
   getForVenue: (venueId: string, signal?: AbortSignal) => apiRequest<{ bookings: OwnerBooking[]; count: number }>(`/venues/${encodeURIComponent(venueId)}/bookings`, { method: "GET", signal, cache: "no-store" }),
+  accept: (id: string) => apiRequest<{ booking: Pick<OwnerBooking, "id" | "status" | "updatedAt"> }>(`/bookings/${encodeURIComponent(id)}/accept`, { method: "PATCH" }),
+  decline: (id: string) => apiRequest<{ booking: Pick<OwnerBooking, "id" | "status" | "updatedAt"> }>(`/bookings/${encodeURIComponent(id)}/decline`, { method: "PATCH" }),
 };
