@@ -53,11 +53,11 @@ const mobileNavItems: MobileNavItem[] = [
     href: "/venues",
     icon: BookOpen,
   },
-  {
-    label: "Train",
-    href: "/trainers",
-    icon: Dumbbell,
-  },
+  // {
+  //   label: "Train",
+  //   href: "/trainers",
+  //   icon: Dumbbell,
+  // },
   {
     label: "Login",
     action: "login",
@@ -77,11 +77,11 @@ const homeDesktopItems = [
     href: "/venues",
     icon: BookOpen,
   },
-  {
-    label: "Train",
-    href: "/trainers",
-    icon: Dumbbell,
-  },
+  // {
+  //   label: "Train",
+  //   href: "/trainers",
+  //   icon: Dumbbell,
+  // },
 ];
 
 export function MainNavbar() {
@@ -602,9 +602,10 @@ function VenueDesktopNavbar({ onLogin }: VenueDesktopNavbarProps) {
               Book
             </Link>
 
-            <Link href="/trainers" className="text-[13px] font-semibold uppercase text-[#111713]">
-              Train
+            {/* <Link href="/trainers" className="text-[13px] font-semibold uppercase text-[#111713]">
+             Train
             </Link>
+             */}
           </nav>
 
           <UserProfileMenu onLogin={onLogin} />

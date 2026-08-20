@@ -5,7 +5,8 @@ const footerGroups = [
   {
     title: "Explore", links: [["Browse venues", "/venues"],
     ["Discover games", "/games"],
-    ["Find trainers", "/trainers"]]
+    // ["Find trainers", "/trainers"]
+  ]
   },
   {
     title: "For owners", links: [["Register your venue", "/#for-owners"],
