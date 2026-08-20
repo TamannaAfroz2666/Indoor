@@ -58,7 +58,10 @@ export function findAllVenues() {
 export function getVenuesByUserId(userId) {
   return prisma.venue.findMany({
     where: { createdByUserId: userId },
-    select: venueListSelect,
+    select: {
+      ...venueListSelect,
+      _count: { select: { photos: true, bookingRequests: true } },
+    },
     orderBy: { createdAt: "desc" },
   });
 }

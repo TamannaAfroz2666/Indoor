@@ -15,7 +15,7 @@ export type ApiVenue = {
   spaces?: Array<{ id: string; venueId?: string; name: string; sport: string; hourlyRate: number }>;
   createdAt: string;
   updatedAt?: string;
-  _count?: { photos: number };
+  _count?: { photos: number; bookingRequests?: number };
 };
 
 const PLACEHOLDER_IMAGE = "/images/venues/1.png";

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bookmark, CalendarDays, CircleUserRound, Gamepad2, LogOut, Settings, Store, Users } from "lucide-react";
+import { Bookmark, CalendarDays, CircleUserRound, ClipboardList, Gamepad2, LogOut, Settings, Store, Users } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/features/auth/AuthProvider";
 
@@ -13,6 +13,7 @@ const items = [
   { label: "Joined Games", href: "/joined-games", icon: Users },
   { label: "Saved Venues", href: "/saved-venues", icon: Bookmark },
   { label: "My Venues", href: "/my-venues", icon: Store },
+  { label: "Booking Requests", href: "/owner/bookings", icon: ClipboardList },
   { label: "Account Settings", href: "/account-settings", icon: Settings },
 ];
 

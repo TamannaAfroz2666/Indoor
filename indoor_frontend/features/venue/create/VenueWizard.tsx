@@ -8,6 +8,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { useVenueDraft } from "./VenueDraftProvider";
 import { validateDraft, validateStep, venueSteps, type DraftPhoto, type ValidationErrors, type VenueDraft, type VenueStep } from "./venue-draft";
 import { venueApi } from "@/lib/venue-api";
+import type { AuthUser } from "@/lib/auth-api";
 
 const inputClass = "mt-2 h-11 w-full rounded-lg border border-[#d8e1dc] bg-white px-3.5 text-sm text-[#26332d] outline-none transition placeholder:text-[#98a39d] focus:border-[#12b866] focus:ring-2 focus:ring-[#12b866]/10";
 const textAreaClass = `${inputClass} h-28 resize-y py-3`;
@@ -53,16 +54,22 @@ function AuthenticatedWizard({ step }: { step: VenueStep }) {
   }, [loading, router, step, user]);
 
   if (loading || !user) return <div className="flex min-h-[60vh] items-center justify-center bg-[#f4f7f5] text-sm text-[#65756d]">Checking your session…</div>;
-  return <WizardContent step={step} />;
+  return <WizardContent step={step} user={user} />;
 }
 
-function WizardContent({ step }: { step: VenueStep }) {
+function WizardContent({ step, user }: { step: VenueStep; user: AuthUser }) {
   const router = useRouter();
-  const { draft, hydrated, resetDraft } = useVenueDraft();
+  const { draft, hydrated, applyContactPrefill, resetDraft } = useVenueDraft();
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const currentIndex = venueSteps.findIndex((item) => item.slug === step);
+
+  useEffect(() => {
+    if (!hydrated || draft.contactPrefillApplied) return;
+    const timer = window.setTimeout(() => applyContactPrefill(user.phone, user.email), 0);
+    return () => window.clearTimeout(timer);
+  }, [applyContactPrefill, draft.contactPrefillApplied, hydrated, user.email, user.phone]);
 
   function goNext() {
     const nextErrors = validateStep(step, draft);
@@ -105,7 +112,7 @@ function WizardContent({ step }: { step: VenueStep }) {
     }
   }
 
-  if (!hydrated) return <div className="flex min-h-[60vh] items-center justify-center bg-[#f4f7f5] text-sm text-[#65756d]">Restoring your venue draft…</div>;
+  if (!hydrated || !draft.contactPrefillApplied) return <div className="flex min-h-[60vh] items-center justify-center bg-[#f4f7f5] text-sm text-[#65756d]">Restoring your venue draft…</div>;
 
   return (
     <main className="min-h-[calc(100vh-80px)] bg-[#f4f7f5] px-4 py-7 text-[#26332d] sm:px-6 lg:px-10 lg:py-10">

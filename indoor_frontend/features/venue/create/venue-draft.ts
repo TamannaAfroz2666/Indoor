@@ -13,6 +13,7 @@ export type VenueStep = (typeof venueSteps)[number]["slug"];
 export type DraftPhoto = { id: string; name: string; type: string; size: number; preview: string };
 
 export type VenueDraft = {
+  contactPrefillApplied: boolean;
   basicInfo: {
     venueName: string; venueType: string; description: string; bookingMode: string;
     phone: string; email: string; website: string; businessStatus: string;
@@ -34,6 +35,7 @@ export type VenueDraft = {
 };
 
 export const emptyVenueDraft: VenueDraft = {
+  contactPrefillApplied: false,
   basicInfo: { venueName: "", venueType: "", description: "", bookingMode: "", phone: "", email: "", website: "", businessStatus: "" },
   location: { address1: "", address2: "", area: "", city: "", district: "", division: "", postalCode: "", country: "Bangladesh" },
   details: { venueSize: "", maximumParticipants: "", minimumBookingMinutes: "", maximumBookingMinutes: "", bookingLeadTime: "", advanceBookingDays: "", cancellationPolicy: "", houseRules: "" },

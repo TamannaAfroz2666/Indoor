@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   BookOpen,
   CircleUserRound,
-  Dumbbell,
   Home,
   MapPin,
   PersonStanding,
@@ -16,12 +15,13 @@ import { useEffect, useRef, useState } from "react";
 import { Logo } from "./Logo";
 import { LoginModal } from "@/features/modal/LoginModal";
 import { UserProfileMenu } from "./UserProfileMenu";
+import { GlobalSearch } from "./GlobalSearch";
+import { NotificationButton } from "./NotificationButton";
 import {
   clearRegistrationLoginPrefill,
   getRegistrationLoginPrefill,
   type LoginPrefill,
 } from "@/lib/registration-login-prefill";
-import type { ElementType } from "react";
 
 type MobileNavItem =
   | {
@@ -93,7 +93,6 @@ export function MainNavbar() {
 
   const isBookingSection = pathname.startsWith("/bookings");
 
-  const hideMobileTopHeader = pathname.startsWith("/venues")
   const isActiveRoute = (href: string) => {
     if (href === "/") {
       return pathname === "/";
@@ -143,14 +142,15 @@ export function MainNavbar() {
         onLoginSuccess={completeRedirectedLogin}
         initialCredentials={loginPrefill}
       />
-      {!hideMobileTopHeader && (
-        <header className="fixed left-0 right-0 top-0 z-50 border-b border-gray-300 bg-white md:hidden">
-          <div className="mx-auto flex h-[70px] w-full max-w-[430px] items-center justify-between px-6">
+      <header className="fixed left-0 right-0 top-0 z-50 border-b border-gray-300 bg-white md:hidden">
+          <div className="mx-auto flex h-[70px] w-full max-w-[430px] items-center justify-between gap-2 px-4 sm:px-6">
             <Logo />
-            <LocationPicker />
+            <div className="flex min-w-0 items-center gap-1">
+              <div className="hidden min-[390px]:block"><LocationPicker /></div>
+              <NotificationButton />
+            </div>
           </div>
-        </header>
-      )}
+      </header>
 
       {/*     
         mobile-hidden
@@ -168,7 +168,6 @@ export function MainNavbar() {
           />
         ) : (
           <HomeDesktopNavbar
-            pathname={pathname}
             isActiveRoute={isActiveRoute}
             onLogin={openLogin}
           />
@@ -230,13 +229,11 @@ export function MainNavbar() {
 navigation 
 */
 type HomeDesktopNavbarProps = {
-  pathname: string;
   isActiveRoute: (href: string) => boolean;
   onLogin: () => void;
 };
 
 function HomeDesktopNavbar({
-  pathname,
   isActiveRoute,
   onLogin
 }: HomeDesktopNavbarProps) {
@@ -248,7 +245,7 @@ function HomeDesktopNavbar({
       onClose={() => setIsLoginModalOpen(false)}
     />
     <header className="sticky top-0 z-50 border-b border-gray-300 bg-white">
-      <div className="mx-auto flex h-[70px] w-full max-w-[1400px] items-center justify-between px-8 lg:px-10">
+      <div className="mx-auto flex h-[70px] w-full max-w-[1400px] items-center justify-between gap-5 px-6 lg:px-10">
         <Logo />
 
         <nav className="flex items-center gap-10 lg:gap-14">
@@ -273,7 +270,11 @@ function HomeDesktopNavbar({
           })}
         </nav>
 
-        <UserProfileMenu onLogin={onLogin} />
+        <div className="flex min-w-0 items-center gap-2">
+          <GlobalSearch className="hidden w-[220px] lg:block xl:w-[330px]" />
+          <NotificationButton />
+          <UserProfileMenu onLogin={onLogin} />
+        </div>
       </div>
     </header>
   </>
@@ -310,7 +311,7 @@ function BookDesktopNavbar({
       onClose={() => setIsLoginModalOpen(false)}
     />
     <header className="sticky top-0 z-50 border-b border-gray-300 bg-white">
-      <div className="mx-auto flex h-[70px] w-full max-w-[1400px] items-center justify-between px-8 lg:px-10">
+      <div className="mx-auto flex h-[70px] w-full max-w-[1400px] items-center justify-between gap-5 px-6 lg:px-10">
         <Logo />
 
         <div className="flex items-center gap-8">
@@ -335,6 +336,8 @@ function BookDesktopNavbar({
             My Bookings
           </Link>
 
+          <GlobalSearch className="hidden w-[210px] lg:block xl:w-[330px]" />
+          <NotificationButton />
           <UserProfileMenu onLogin={onLogin} />
         </div>
       </div>
@@ -407,10 +410,11 @@ function LocationPicker() {
         onClick={() => setIsOpen((previous) => !previous)}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
-        className="
+      className="
           flex
           h-[44px]
-          w-[168px]
+          w-[140px]
+          min-[430px]:w-[168px]
           items-center
           gap-3
           rounded-full
@@ -571,11 +575,11 @@ type VenueDesktopNavbarProps = {
 function VenueDesktopNavbar({ onLogin }: VenueDesktopNavbarProps) {
   return (
     <header className="sticky top-0 z-50 hidden border-b border-[#dce2df] bg-white md:block">
-      <div className="mx-auto flex h-[80px] w-full max-w-[1600px] items-center px-8 lg:px-14">
+      <div className="mx-auto flex h-[80px] w-full max-w-[1600px] items-center gap-5 px-6 lg:px-10 xl:px-14">
         <Logo />
 
-        <div className="ml-auto flex items-center gap-7">
-          <div className="relative">
+        <div className="ml-auto flex min-w-0 items-center gap-3 xl:gap-6">
+          <div className="relative hidden xl:block">
             <MapPin size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#26332d]" />
 
             <select
@@ -608,6 +612,8 @@ function VenueDesktopNavbar({ onLogin }: VenueDesktopNavbarProps) {
              */}
           </nav>
 
+          <GlobalSearch className="hidden w-[210px] lg:block 2xl:w-[330px]" />
+          <NotificationButton />
           <UserProfileMenu onLogin={onLogin} />
         </div>
       </div>

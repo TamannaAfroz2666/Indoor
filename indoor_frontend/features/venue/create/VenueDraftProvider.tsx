@@ -8,6 +8,7 @@ type DraftContextValue = {
   draft: VenueDraft;
   hydrated: boolean;
   updateSection: <K extends Section>(section: K, value: VenueDraft[K]) => void;
+  applyContactPrefill: (phone: string | null, email: string | null) => void;
   resetDraft: () => void;
 };
 
@@ -44,13 +45,28 @@ export function VenueDraftProvider({ children }: { children: React.ReactNode }) 
     setDraft((current) => ({ ...current, [section]: value }));
   }
 
+  function applyContactPrefill(phone: string | null, email: string | null) {
+    setDraft((current) => {
+      if (current.contactPrefillApplied) return current;
+      return {
+        ...current,
+        contactPrefillApplied: true,
+        basicInfo: {
+          ...current.basicInfo,
+          phone: current.basicInfo.phone || phone || "",
+          email: current.basicInfo.email || email || "",
+        },
+      };
+    });
+  }
+
   function resetDraft() {
     localStorage.removeItem(VENUE_DRAFT_STORAGE_KEY);
     skipNextPersist.current = true;
     setDraft(emptyVenueDraft);
   }
 
-  const value = useMemo(() => ({ draft, hydrated, updateSection, resetDraft }), [draft, hydrated]);
+  const value = useMemo(() => ({ draft, hydrated, updateSection, applyContactPrefill, resetDraft }), [draft, hydrated]);
   return <DraftContext.Provider value={value}>{children}</DraftContext.Provider>;
 }
 
