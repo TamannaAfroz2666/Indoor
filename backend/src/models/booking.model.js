@@ -15,18 +15,75 @@ export function findBookingVenueAndSpace(venueId, spaceId) {
 
 /** @param {import('@prisma/client').Prisma.BookingRequestCreateInput | any} data @param {Date} endAt */
 export function createBookingWithConflictCheck(data, endAt) {
+
   return prisma.$transaction(async (tx) => {
+
+    const venue = await tx.venue.findUnique({
+      where: {
+        id: data.venueId,
+      },
+      select: {
+        id: true,
+        createdByUserId: true,
+      },
+    });
+
+    if (!venue) {
+      throw Object.assign(new Error("Venue not found"), {
+        statusCode: 404,
+      });
+    }
+
+    // 2. control self booking access
+    if (venue.createdByUserId === data.userId) {
+      throw Object.assign(
+        new Error("You cannot book your own venue"),
+        { statusCode: 400 }
+      );
+    }
+
     const candidates = await tx.bookingRequest.findMany({
       where: { spaceId: data.spaceId, status: { in: ["PENDING", "ACCEPTED"] }, startAt: { lt: endAt } },
       select: { startAt: true, duration: true },
     });
     const overlaps = candidates.some((booking) => new Date(booking.startAt.getTime() + booking.duration * 60000) > data.startAt);
     if (overlaps) throw Object.assign(new Error("This space already has a pending or accepted booking during that time"), { statusCode: 409 });
-    return tx.bookingRequest.create({
+    // old 
+    // return tx.bookingRequest.create({
+    //   data,
+    //   select: { id: true, venueId: true, spaceId: true, startAt: true, duration: true, participants: true, hourlyRate: true, estimatedRate: true, status: true },
+    // });
+
+    const bookingRequest = await tx.bookingRequest.create({
       data,
       select: { id: true, venueId: true, spaceId: true, startAt: true, duration: true, participants: true, hourlyRate: true, estimatedRate: true, status: true },
     });
-  }, { isolationLevel: "Serializable" });
+    await tx.notification.create({
+      data: {
+        type: "BOOKING_REQUESTED",
+
+        // যিনি booking request পাঠিয়েছেন
+        actorId: data.userId,
+
+        // যিনি notification পাবেন
+        recipientId: venue.createdByUserId,
+
+        // নতুন booking-এর ID
+        bookingRequestId: bookingRequest.id,
+        title: "New booking request",
+        message: "You have received a new booking request.",
+      },
+    });
+
+    // 6. Created booking return
+    return bookingRequest;
+  },
+    {
+      isolationLevel: "Serializable",
+    }
+  );
+
+
 }
 
 /** @param {string} userId */

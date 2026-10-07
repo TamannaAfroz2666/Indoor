@@ -23,14 +23,22 @@ export async function createBookingService(payload, userId) {
   if (startAt > latest) fail(`Bookings can only be made ${venue.advanceBookingDays} days in advance`);
 
   const estimatedRate = Math.round(space.hourlyRate * payload.duration / 60);
+
   const booking = await createBookingWithConflictCheck({
-    userId, venueId: venue.id, spaceId: space.id, startAt, duration: payload.duration,
-    participants: payload.participants ?? null, message: payload.message?.trim() || null,
-    hourlyRate: space.hourlyRate, estimatedRate, status: "PENDING",
+    userId, venueId: venue.id,
+    spaceId: space.id,
+    startAt,
+    duration: payload.duration,
+    participants: payload.participants ?? null,
+    message: payload.message?.trim() || null,
+    hourlyRate: space.hourlyRate,
+    estimatedRate, status: "PENDING",
   }, new Date(startAt.getTime() + payload.duration * 60000));
 
   return { booking, contact: { phone: venue.phone } };
 }
+
+
 
 /** @param {string} userId */
 export async function getMyBookingsService(userId) {

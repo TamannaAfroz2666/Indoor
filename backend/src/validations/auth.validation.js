@@ -40,6 +40,12 @@ export const registerValidation = [
     .withMessage("Account type is required")
     .isIn(["USER", "VENUE_OWNER"])
     .withMessage("Account type must be USER or VENUE_OWNER"),
+  body("location")
+    .trim()
+    .notEmpty()
+    .withMessage("Location is required")
+    .isLength({ min: 2, max: 260 })
+    .withMessage("Location must be between 2 and 260 characters"),
 ];
 
 

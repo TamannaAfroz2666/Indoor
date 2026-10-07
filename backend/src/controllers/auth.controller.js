@@ -14,6 +14,7 @@ export async function registerController(req, res, next) {
             email,
             password,
             accountType,
+            location
         } = req.body;
 
         const data = await registerUserService({
@@ -22,6 +23,7 @@ export async function registerController(req, res, next) {
             email,
             password,
             accountType,
+            location,
         });
 
         return res.status(201).json({

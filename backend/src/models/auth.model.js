@@ -29,12 +29,14 @@ export async function createUser(data) {
       name: true,
       phone: true,
       email: true,
+      location: true,
       avatar: true,
       accountType: true,
       authProvider: true,
       emailVerified: true,
       phoneVerified: true,
       createdAt: true,
+
     },
   });
 }
@@ -45,17 +47,18 @@ export async function getRegisteredUsers() {
       passwordHash: true,
     },
   });
-} 
+}
 
 export async function getLoginUsers() {
   return prisma.user.findMany();
-} 
+}
 
 const safeUserSelect = {
   id: true,
   name: true,
   phone: true,
   email: true,
+  location: true,
   avatar: true,
   accountType: true,
   authProvider: true,

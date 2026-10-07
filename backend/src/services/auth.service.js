@@ -13,6 +13,7 @@ export async function registerUserService(payload) {
     email,
     password,
     accountType,
+    location,
   } = payload;
   const normalizedEmail = email?.trim().toLowerCase();
 
@@ -47,6 +48,7 @@ export async function registerUserService(payload) {
     passwordHash,
     accountType,
     authProvider: "EMAIL",
+    location
   });
 }
 

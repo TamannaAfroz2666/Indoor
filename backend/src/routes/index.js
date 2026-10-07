@@ -8,5 +8,6 @@ const router = Router();
 router.use('/auth', authRoutes);
 router.use('/venues', venueRoutes);
 router.use('/bookings', bookingRoutes);
+router.use('/notification', bookingRoutes);
 
 export default router;
