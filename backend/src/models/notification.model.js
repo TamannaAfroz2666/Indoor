@@ -18,3 +18,70 @@ export function createNotification(tx, data) {
 
     })
 }
+
+
+/**
+ * @param {string} recipientId
+ * @param {number} skip
+ * @param {number} take
+ */
+
+export function findNotifications(recipientId, skip, take) {
+  return prisma.notification.findMany({
+    where: { recipientId },
+    orderBy: [
+      { createdAt: "desc" },
+      { id: "desc" },
+    ],
+    skip,
+    take,
+    select: {
+      id: true,
+      type: true,
+      title: true,
+      message: true,
+      readAt: true,
+      createdAt: true,
+      bookingRequestId: true,
+
+      actor: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+        },
+      },
+
+      bookingRequest: {
+        select: {
+          id: true,
+          venueId: true,
+          spaceId: true,
+          startAt: true,
+          duration: true,
+          participants: true,
+          message: true,
+          estimatedRate: true,
+          status: true,
+        },
+      },
+    },
+  });
+}
+
+/** @param {string} recipientId */
+export function countNotifications(recipientId) {
+  return prisma.notification.count({
+    where: { recipientId },
+  });
+}
+
+/** @param {string} recipientId */
+export function countUnreadNotifications(recipientId) {
+  return prisma.notification.count({
+    where: {
+      recipientId,
+      readAt: null,
+    },
+  });
+}
