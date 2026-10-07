@@ -4,6 +4,8 @@ import { getNotifications } from "../controllers/notifications.controller.js";
 
 
 const router = Router();
+// router.post("/", requireAuth, createNotifications);
+
 router.get("/", requireAuth, getNotifications);
 
 

@@ -5,7 +5,7 @@ export function findBookingVenueAndSpace(venueId, spaceId) {
   return prisma.venue.findUnique({
     where: { id: venueId },
     select: {
-      id: true, name: true, phone: true, maximumParticipants: true,
+      id: true, name: true, phone: true, maximumParticipants: true,createdByUserId: true,
       minimumBookingMinutes: true, maximumBookingMinutes: true,
       bookingLeadTime: true, advanceBookingDays: true,
       spaces: { where: { id: spaceId }, select: { id: true, venueId: true, name: true, sport: true, hourlyRate: true } },
@@ -14,76 +14,91 @@ export function findBookingVenueAndSpace(venueId, spaceId) {
 }
 
 /** @param {import('@prisma/client').Prisma.BookingRequestCreateInput | any} data @param {Date} endAt */
-export function createBookingWithConflictCheck(data, endAt) {
+/**
+ * @param {import("@prisma/client").Prisma.BookingRequestUncheckedCreateInput} data
+ * @param {Date} endAt
+ * @param {import("@prisma/client").Prisma.TransactionClient} tx
+ */
+export async function createBookingWithConflictCheck(data, endAt, tx) {
+  const venue = await tx.venue.findUnique({
+    where: {
+      id: data.venueId,
+    },
+    select: {
+      id: true,
+      createdByUserId: true,
+    },
+  });
 
-  return prisma.$transaction(async (tx) => {
+  if (!venue) {
+    throw Object.assign(new Error("Venue not found"), {
+      statusCode: 404,
+    });
+  }
 
-    const venue = await tx.venue.findUnique({
-      where: {
-        id: data.venueId,
+  if (venue.createdByUserId === data.userId) {
+    throw Object.assign(
+      new Error("You cannot book your own venue"),
+      { statusCode: 400 }
+    );
+  }
+
+  const candidates = await tx.bookingRequest.findMany({
+    where: {
+      spaceId: data.spaceId,
+      status: "ACCEPTED",
+      startAt: {
+        lt: endAt,
       },
-      select: {
-        id: true,
-        createdByUserId: true,
-      },
-    });
+    },
+    select: {
+      startAt: true,
+      duration: true,
+    },
+  });
 
-    if (!venue) {
-      throw Object.assign(new Error("Venue not found"), {
-        statusCode: 404,
-      });
-    }
+  const requestedStartAt = new Date(data.startAt);
 
-    // 2. control self booking access
-    if (venue.createdByUserId === data.userId) {
-      throw Object.assign(
-        new Error("You cannot book your own venue"),
-        { statusCode: 400 }
-      );
-    }
+  const overlaps = candidates.some((booking) => {
+    const existingEndAt = new Date(
+      booking.startAt.getTime() + booking.duration * 60000
+    );
 
-    const candidates = await tx.bookingRequest.findMany({
-      where: { spaceId: data.spaceId, status: { in: ["PENDING", "ACCEPTED"] }, startAt: { lt: endAt } },
-      select: { startAt: true, duration: true },
-    });
-    const overlaps = candidates.some((booking) => new Date(booking.startAt.getTime() + booking.duration * 60000) > data.startAt);
-    if (overlaps) throw Object.assign(new Error("This space already has a pending or accepted booking during that time"), { statusCode: 409 });
-    // old 
-    // return tx.bookingRequest.create({
-    //   data,
-    //   select: { id: true, venueId: true, spaceId: true, startAt: true, duration: true, participants: true, hourlyRate: true, estimatedRate: true, status: true },
-    // });
+    return existingEndAt > requestedStartAt;
+  });
 
-    const bookingRequest = await tx.bookingRequest.create({
-      data,
-      select: { id: true, venueId: true, spaceId: true, startAt: true, duration: true, participants: true, hourlyRate: true, estimatedRate: true, status: true },
-    });
-    await tx.notification.create({
-      data: {
-        type: "BOOKING_REQUESTED",
+  if (overlaps) {
+    throw Object.assign(
+      new Error("This space already has an accepted booking during that time"),
+      { statusCode: 409 }
+    );
+  }
 
-        // যিনি booking request পাঠিয়েছেন
-        actorId: data.userId,
+  return tx.bookingRequest.create({
+    data,
+    select: {
+      id: true,
+      venueId: true,
+      spaceId: true,
+      startAt: true,
+      duration: true,
+      participants: true,
+      hourlyRate: true,
+      estimatedRate: true,
+      status: true,
+    },
+  });
+}
 
-        // যিনি notification পাবেন
-        recipientId: venue.createdByUserId,
-
-        // নতুন booking-এর ID
-        bookingRequestId: bookingRequest.id,
-        title: "New booking request",
-        message: "You have received a new booking request.",
-      },
-    });
-
-    // 6. Created booking return
-    return bookingRequest;
-  },
-    {
-      isolationLevel: "Serializable",
-    }
-  );
-
-
+/**
+ * @template T
+ * @param {(tx: import("@prisma/client").Prisma.TransactionClient) => Promise<T>} callback
+ * @returns {Promise<T>}
+ */
+export function withBookingTransaction(callback) {
+  return prisma.$transaction(callback, {
+    isolationLevel: "Serializable",
+  });
 }
 
 /** @param {string} userId */

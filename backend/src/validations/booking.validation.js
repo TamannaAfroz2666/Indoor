@@ -5,6 +5,7 @@ export const bookingIdValidation = [
 ];
 
 export const createBookingValidation = [
+  
   body("venueId").isUUID().withMessage("A valid venueId is required"),
   body("spaceId").isUUID().withMessage("A valid spaceId is required"),
   body("startAt").isISO8601({ strict: true }).withMessage("startAt must be a valid ISO date and time"),
