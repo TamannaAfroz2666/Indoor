@@ -1,6 +1,28 @@
+"use client";
+
 import { MapPin } from "lucide-react";
+import { authApi } from "@/lib/auth-api";
+import { useEffect, useState } from "react";
 
 export function LocationSelector() {
+  const [location, setLocation] = useState("")
+
+  useEffect(() => {
+    const getLocation = async () => {
+      try {
+        const data = await authApi.me();
+        console.log('hi', data.user)
+        setLocation(data.user.location ?? "")
+      } catch (err) {
+        console.log(err)
+      }
+    }
+    getLocation()
+
+  }, [])
+
+
+
   return (
     <button
       type="button"
@@ -8,7 +30,7 @@ export function LocationSelector() {
     >
       <MapPin size={18} strokeWidth={2} />
 
-      <span>Dhaka</span>
+      <span> {location}</span>
     </button>
   );
 }

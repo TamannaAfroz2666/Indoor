@@ -9,13 +9,15 @@ import { setRegistrationLoginPrefill } from "@/lib/registration-login-prefill";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: "", phone: "", email: "", password: "", accountType: "USER" as "USER" | "VENUE_OWNER" });
+  const [form, setForm] = useState({ name: "", phone: "", email: "", password: "", accountType: "USER" as "USER" | "VENUE_OWNER", location: "" });
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const set = (field: keyof typeof form, value: string) => setForm((current) => ({ ...current, [field]: value }));
 
   async function submit(event: FormEvent) {
-    event.preventDefault(); setBusy(true); setMessage("");
+    event.preventDefault();
+    setBusy(true);
+    setMessage("");
     try {
       await authApi.register(form);
       setRegistrationLoginPrefill({ email: form.email, password: form.password });
@@ -68,6 +70,12 @@ export default function RegisterPage() {
                   <option value="VENUE_OWNER">Venue owner</option>
                 </select>
               </label>
+
+              <label className="block text-sm">
+                Location
+                <input required minLength={2} value={form.location} onChange={(e) => set("location", e.target.value)} autoComplete="location" className={inputClass} />
+              </label>
+
               {message && <p role="alert" className="text-sm text-red-600">{message}</p>}
               <button disabled={busy}
                 className="h-10 w-full rounded bg-black text-white

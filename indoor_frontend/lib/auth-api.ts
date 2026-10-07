@@ -6,6 +6,7 @@ export type AuthUser = {
   email: string | null;
   phone: string | null;
   name: string | null;
+  location: string | null;
   avatar: string | null;
   accountType: "USER" | "VENUE_OWNER";
   emailVerified: boolean;
@@ -20,7 +21,7 @@ export const authApi = {
     if (session.token) storeAccessToken(session.token, session.sessionExpiresAt);
     return session;
   },
-  register: (data: { name: string; phone: string; email: string; password: string; accountType: "USER" | "VENUE_OWNER" }) =>
+  register: (data: { name: string; phone: string; email: string; password: string; accountType: "USER" | "VENUE_OWNER", location: string }) =>
     apiRequest<{ user: AuthUser }>("/auth/register", { body: data }),
   me: async () => {
     const session = await apiRequest<AuthSession>("/auth/me", { method: "GET" });
