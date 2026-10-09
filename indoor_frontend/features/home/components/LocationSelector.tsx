@@ -11,7 +11,6 @@ export function LocationSelector() {
     const getLocation = async () => {
       try {
         const data = await authApi.me();
-        console.log('hi', data.user)
         setLocation(data.user.location ?? "")
       } catch (err) {
         console.log(err)
