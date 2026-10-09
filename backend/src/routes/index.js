@@ -10,5 +10,6 @@ router.use('/auth', authRoutes);
 router.use('/venues', venueRoutes);
 router.use('/bookings', bookingRoutes);
 router.use('/notification', notificationRoutes);
+router.use('/notifications', notificationRoutes);
 
 export default router;
